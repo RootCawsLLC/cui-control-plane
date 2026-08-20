@@ -60,14 +60,13 @@ jobs:
   # Schema conformance is checked by NIST's own oscal-cli, not asserted in a README. The `oscal`
   # npm package bootstraps the real Java CLI from Maven Central; it needs a JDK, hence setup-java.
   #
-  # NOTHING HERE IS PIPED THROUGH `|| true`. An earlier version of this job did that against a
-  # package name that does not exist on npm, and reported green while validating nothing - which is
-  # the precise failure mode this repository exists to argue against. A check that cannot fail is
-  # decoration. The job carries continue-on-error so a schema gap does not block the emitters being
-  # tested above, but the step itself runs for real and its log shows the actual result.
+  # BLOCKING, and nothing is piped through `|| true` except the bootstrap step, whose file is
+  # validated again for real below. An earlier version of this job ran `|| true` against a package
+  # name that does not even exist on npm and reported green while validating nothing - the precise
+  # failure mode this repository exists to argue against. All eight artifacts validate clean today,
+  # so this gate can fail the build, and a regression in any emitter now stops a merge.
   oscal-validate:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

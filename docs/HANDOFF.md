@@ -13,9 +13,12 @@ The spine runs end to end against synthetic evidence: `npm run demo` walks it.
 - **The requirement index** — 110 identifiers across 14 families, generated and diff-checked.
 - **dbt layer** — 10 staging models, 6 control models (one per `control_id`), an explicit union, and
   the variance model that produces the four timestamps.
-- **OSCAL O1–O5** — seven artifacts, all byte-stable across re-export, all v5 UUIDs.
+- **OSCAL O1–O5** — eight artifacts, all byte-stable across re-export, all v5 UUIDs, and all
+  validating clean against NIST’s `oscal-cli` as a blocking CI gate. The assessment plan was
+  added because the validator proved `import-ap` is followed rather than merely recorded.
 - **SPRS derivation** — and its refusal path.
-- **50 tests passing**, including the guard suite that proves each house rule actually fires.
+- **53 tests passing**, including the guard suite that proves each house rule actually fires and
+  the reference tests that pin the cross-document UUID shapes the validator rejected.
 
 ## What is stubbed, and what "stubbed" means here
 
@@ -68,9 +71,11 @@ on the Phase 0 boundary decision.
 - `populationsAgree` is a Jaccard overlap on significant words with a 0.5 threshold. It catches a
   `where` clause edited without its record, which is the drift that actually happens. It would not
   catch a semantically inverted population described in the same vocabulary.
-- The `oscal-validate` CI job is `continue-on-error` and pipes through `|| true`. The emitters are
-  tested in the blocking job; the schema check is informational until the catalog layer settles.
-  Tighten it once it is stable — an advisory check that stays advisory forever is decoration.
+- The `oscal-validate` job bootstraps NIST’s Java CLI from Maven Central on every run, so CI has
+  a network dependency on `repo1.maven.org` and on the `oscal` npm wrapper. Pin or vendor it if
+  that flakes. The bootstrap step keeps a `|| true` because the wrapper installs the CLI on first
+  use and exits without validating that first file — the same file is then validated for real in
+  the blocking loop, so nothing is hidden.
 - `ctl.iam.corp-it.mfa` has `started_at_basis: equals_detected` throughout its fixture, so every
   duration on that control understates the true window. That is realistic for a corporate IdP with
   no trustworthy per-account change timestamp, and it is disclosed rather than hidden — but it does

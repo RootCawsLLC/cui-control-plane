@@ -44,7 +44,7 @@ repository is organised around **one** control inventory that each regime crossw
 controls/            the inventory - one YAML record per control
 reference/           requirement identifiers and SPRS weights. Identifiers only, never framework text
 models/              dbt: staging -> controls (one model per control_id) -> variance
-src/oscal/           O1 component definition, O2 catalog + profile, O3 results, O4 POA&M, O5 SSP
+src/oscal/           O1 component definition, O2 catalog + profile, O3 plan + results, O4 POA&M, O5 SSP
 src/sprs.mjs         SPRS derived from assertion records - and the refusals that keep it honest
 fixtures/            synthetic assertion records, all stamped NOT REAL EVIDENCE
 docs/adr/            the decisions that were expensive to reach
@@ -104,6 +104,15 @@ unchanged inventory re-exports **byte-identically**, so the assessment package i
 Git diff instead of a blob that changes every run — the direct answer to the strongest published
 criticism of OSCAL. `tests/emit.test.mjs` asserts it rather than claiming it, and the v5
 implementation is pinned to the published RFC test vector.
+
+**All eight artifacts validate against NIST's own `oscal-cli`, as a blocking CI gate** — catalog,
+both profiles, component definition, assessment plan, assessment results, POA&M and SSP. That gate
+earned its keep immediately: it caught six defects nothing else would have, including `#assessment-plan`
+as a document reference (OSCAL resolves `#…` fragments *as UUIDs* and follows them), `item` parts at
+the top level of a control, and `with-ids` profile syntax used where the assessment models require
+`control-id`. None of those are visible by reading the JSON. An earlier version of that job invoked a
+package name that does not exist on npm and piped it through `|| true`, reporting green while
+validating nothing — which is why the comment above it now says what it does.
 
 This differs from `ksi-harness`, which truncates a SHA-256 into a v4 shape. That is stable within
 one repository; v5 is stable across any RFC 4122 implementation, so an assessor can recompute our

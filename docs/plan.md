@@ -110,6 +110,12 @@ carries that disclosure through every artifact rather than leaving it to a footn
 
 ## Phase 3 — Attestation and assessment readiness (weeks 10–16)
 
+The plan called for O3, O4 and O5. It turned out to need an **assessment plan** as well: OSCAL
+follows `import-ap` rather than merely recording it, so assessment results without one is an
+incomplete object graph and NIST’s validator says so. It is minimal by design — the plan is
+"run the control models over their full populations on their stated cadence", because there is no
+sampling design to describe. The assessment plan for a query is the query.
+
 - **SSP generated, never hand-authored** (O5). The highest-leverage single decision in the plan for
   a CMMC engagement — see [ADR 0004](adr/0004-generated-ssp-and-poam.md).
 - **POA&M generated from `failing[]`** (O4), carrying the four variance timestamps so it reads as a

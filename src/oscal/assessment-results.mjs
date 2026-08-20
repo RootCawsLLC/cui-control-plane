@@ -84,7 +84,14 @@ export function assessmentResults(assertions) {
           start: assertions.map((a) => a.as_of).sort()[0] ?? lastModified(assertions),
           end: lastModified(assertions),
           'reviewed-controls': {
-            'control-selections': [{ 'include-controls': [{ 'with-ids': [...new Set(assertions.map((a) => a.control_id))].sort() }] }],
+            // SelectControlById, not the profile's with-ids. See assessment-plan.mjs.
+            'control-selections': [
+              {
+                'include-controls': [...new Set(assertions.map((a) => a.control_id))]
+                  .sort()
+                  .map((id) => ({ 'control-id': id })),
+              },
+            ],
           },
           observations,
           findings,

@@ -54,15 +54,26 @@ function groupsByDomain(controls) {
           { ns: PROPS_NS, name: 'layer', value: c.layer },
           { ns: PROPS_NS, name: 'owner', value: c.owner },
         ],
+        // OSCAL constrains control part names: a top-level part is `overview`, `statement`,
+        // `guidance` or an assessment part, and `item` is legal only NESTED inside a statement.
+        // Emitting `item` at the top level trips oscal-control-part-name and
+        // oscal-control-statement-part-name together - which is where the population and the split
+        // rationale used to sit.
         parts: [
           // The assertion is the statement. It is ours, it quantifies over a population, and it is
           // the thing a query proves - which is why it is the catalog statement rather than a
           // paraphrase of somebody else's requirement.
-          { id: `${c.control_id}_smt`, name: 'statement', prose: c.assertion },
-          { id: `${c.control_id}_pop`, name: 'item', title: 'Population', prose: c.population_definition },
-          ...(c.split_rationale
-            ? [{ id: `${c.control_id}_split`, name: 'item', title: 'Layer split rationale', prose: c.split_rationale }]
-            : []),
+          {
+            id: `${c.control_id}_smt`,
+            name: 'statement',
+            prose: c.assertion,
+            parts: [
+              { id: `${c.control_id}_pop`, name: 'item', title: 'Population', prose: c.population_definition },
+              ...(c.split_rationale
+                ? [{ id: `${c.control_id}_split`, name: 'item', title: 'Layer split rationale', prose: c.split_rationale }]
+                : []),
+            ],
+          },
         ],
         links: (c.crosswalk ?? []).map((edge) => ({
           href: crosswalkHref(edge.framework, edge.reference),

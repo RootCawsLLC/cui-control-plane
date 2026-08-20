@@ -36,7 +36,11 @@ export function assessmentPlan() {
             description:
               'Controls whose layer places them inside the assessed boundary. corp-it layer ' +
               'controls are excluded deliberately - see the CMMC Level 2 profile tailoring statement.',
-            'include-controls': [{ 'with-ids': inBoundary.map((c) => c.control_id).sort() }],
+            // reviewed-controls takes SelectControlById - {control-id} per entry. `with-ids` is
+            // PROFILE syntax and is silently the wrong shape here; the schema rejects it.
+            'include-controls': inBoundary
+              .map((c) => ({ 'control-id': c.control_id }))
+              .sort((a, b) => a['control-id'].localeCompare(b['control-id'])),
           },
         ],
       },

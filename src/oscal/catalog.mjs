@@ -1,4 +1,4 @@
-import { ids, metadata, sortKeys } from './common.mjs';
+import { ids, metadata, sortKeys, ref, resource, crosswalkHref } from './common.mjs';
 import { loadControls, loadRequirementIndex } from '../lib/load.mjs';
 
 /**
@@ -60,7 +60,7 @@ function groupsByDomain(controls) {
             : []),
         ],
         links: (c.crosswalk ?? []).map((edge) => ({
-          href: `#${edge.framework}:${edge.reference}`,
+          href: crosswalkHref(edge.framework, edge.reference),
           rel: 'related',
           text: `${edge.framework} ${edge.reference} (confidence: ${edge.confidence}) - ${edge.basis}`,
         })),
@@ -117,13 +117,16 @@ function profile({ key, title, controls, remarks }) {
         metadata: metadata({ title }),
         imports: [
           {
-            href: '#catalog',
+            href: ref('catalog'),
             'include-controls': [{ 'with-ids': controls.map((c) => c.control_id).sort() }],
           },
         ],
         merge: { 'as-is': true },
         'back-matter': {
           resources: [
+            // The import href above is a UUID fragment, so it needs something in back-matter to
+            // land on. Without this the profile references a catalog the validator cannot resolve.
+            resource('catalog', 'House control catalog', 'oscal-catalog.json'),
             {
               uuid: ids.document(`profile-tailoring|${key}`),
               title: 'Tailoring statement',

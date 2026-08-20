@@ -1,4 +1,4 @@
-import { ids, metadata, sortKeys, PROPS_NS } from './common.mjs';
+import { ids, metadata, sortKeys, ref, resource, PROPS_NS } from './common.mjs';
 import { loadControls, isFixtureSet } from '../lib/load.mjs';
 
 /**
@@ -44,7 +44,8 @@ export function ssp(assertions) {
           name: r,
         })),
       },
-      'import-profile': { href: '#profile-cmmc-l2' },
+      'import-profile': { href: ref('profile|cmmc-l2') },
+      'back-matter': { resources: [resource('profile|cmmc-l2', 'CMMC Level 2 profile', 'oscal-profile-cmmc-l2.json')] },
       'system-characteristics': {
         'system-ids': [{ id: ids.document('system'), 'identifier-type': 'https://ietf.org/rfc/rfc4122' }],
         'system-name': 'CUI enclave',

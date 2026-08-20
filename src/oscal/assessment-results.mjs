@@ -1,4 +1,4 @@
-import { ids, metadata, faircamProps, sortKeys, lastModified, PROPS_NS } from './common.mjs';
+import { ids, metadata, faircamProps, sortKeys, lastModified, ref, resource, PROPS_NS } from './common.mjs';
 import { loadControls, isFixtureSet, FIXTURE_STAMP } from '../lib/load.mjs';
 
 /**
@@ -72,7 +72,8 @@ export function assessmentResults(assertions) {
     'assessment-results': sortKeys({
       uuid: ids.document('assessment-results'),
       metadata: metadata({ title: 'CUI control plane - assessment results', assertions, isFixture }),
-      'import-ap': { href: '#assessment-plan' },
+      'import-ap': { href: ref('assessment-plan') },
+      'back-matter': { resources: [resource('assessment-plan', 'Assessment plan', 'oscal-assessment-plan.json')] },
       results: [
         {
           uuid: ids.result('all', lastModified(assertions)),

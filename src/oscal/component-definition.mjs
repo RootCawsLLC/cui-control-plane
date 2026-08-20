@@ -1,4 +1,4 @@
-import { ids, metadata, faircamProps, sortKeys, PROPS_NS } from './common.mjs';
+import { ids, metadata, faircamProps, sortKeys, ref, PROPS_NS } from './common.mjs';
 import { loadControls } from '../lib/load.mjs';
 
 /**
@@ -33,7 +33,7 @@ export function componentDefinition() {
       'control-implementations': [
         {
           uuid: ids.component(`impl|${source}`),
-          source: '#catalog',
+          source: ref('catalog'),
           description: `Controls evidenced from ${source}.`,
           'implemented-requirements': group.map((c) => ({
             uuid: ids.implementedRequirement(c.control_id, 'house', c.control_id),

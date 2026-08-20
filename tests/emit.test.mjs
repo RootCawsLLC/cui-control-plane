@@ -57,6 +57,56 @@ test('no artifact carries a wall-clock timestamp', () => {
   }
 });
 
+// ---------------------------------------------------------------------------------------------
+// Cross-document references. OSCAL resolves `#…` fragments AS UUIDs and follows them, so a
+// readable fragment like `#catalog` is not a visible schema error - it fails deep inside NIST's
+// validator with "Invalid UUID string: catalog". That is how it was found here, and this is what
+// stops it coming back.
+// ---------------------------------------------------------------------------------------------
+test('every cross-document reference is a UUID fragment that resolves', () => {
+  const cat = catalog().catalog;
+  const prof = profiles()[0].doc.profile;
+  const ar = assessmentResults(assertions)['assessment-results'];
+  const plan = ssp(assertions)['system-security-plan'];
+  const comp = componentDefinition()['component-definition'];
+
+  const uuidFragment = /^#[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+  // The profile imports the catalog by its actual UUID, and carries a back-matter resource to
+  // land on.
+  assert.match(prof.imports[0].href, uuidFragment);
+  assert.equal(prof.imports[0].href, `#${cat.uuid}`);
+  assert.ok(prof['back-matter'].resources.some((r) => r.uuid === cat.uuid));
+
+  // The SSP imports the CMMC profile the same way.
+  assert.match(plan['import-profile'].href, uuidFragment);
+  assert.equal(plan['import-profile'].href, `#${prof.uuid}`);
+  assert.ok(plan['back-matter'].resources.some((r) => r.uuid === prof.uuid));
+
+  // Assessment results reference an assessment plan that does not exist yet, so the reference must
+  // at least be a well-formed UUID with a back-matter resource rather than a readable placeholder.
+  assert.match(ar['import-ap'].href, uuidFragment);
+  assert.ok(ar['back-matter'].resources.some((r) => `#${r.uuid}` === ar['import-ap'].href));
+
+  // Component implementations source from the catalog by UUID too.
+  for (const c of comp.components) {
+    for (const impl of c['control-implementations']) {
+      assert.equal(impl.source, `#${cat.uuid}`);
+    }
+  }
+});
+
+test('crosswalk links are URNs, not dangling fragments', () => {
+  const links = catalog()
+    .catalog.groups.flatMap((g) => g.controls)
+    .flatMap((c) => c.links ?? []);
+  assert.ok(links.length > 0);
+  for (const l of links) {
+    assert.match(l.href, /^urn:rootcaws:cui-control-plane:/);
+    assert.ok(!l.href.startsWith('#'), 'a crosswalk target is an external identifier, not a document here');
+  }
+});
+
 test('every UUID in the emitted set is v5', () => {
   const seen = [];
   const walk = (v) => {

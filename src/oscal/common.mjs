@@ -22,6 +22,31 @@ export const ids = {
 };
 
 /**
+ * Cross-document references.
+ *
+ * OSCAL resolves `#…` fragments as UUIDs and will try to follow them. A readable fragment like
+ * `#catalog` is not a schema error you can see by eye - it fails deep inside the validator with
+ * "Invalid UUID string: catalog", which is how it was found here. Always reference a document by
+ * its deterministic UUID, and give the reference something to land on in back-matter.
+ */
+export const ref = (kind) => `#${ids.document(kind)}`;
+
+/** A back-matter resource so a `ref()` fragment resolves to the emitted file rather than dangling. */
+export const resource = (kind, title, filename) => ({
+  uuid: ids.document(kind),
+  title,
+  rlinks: [{ href: `./${filename}` }],
+});
+
+/**
+ * Crosswalk links use a URN rather than a fragment, for the same reason. A crosswalk target is an
+ * external identifier, not a document this package contains - modelling it as `#framework:item`
+ * invites the validator to resolve a fragment that was never going to exist.
+ */
+export const crosswalkHref = (framework, reference) =>
+  `urn:rootcaws:cui-control-plane:${framework}:${encodeURIComponent(reference)}`;
+
+/**
  * `last-modified` is a real problem for byte-stability: OSCAL requires it, and setting it to the
  * clock means every export differs from the last even when nothing changed, which destroys the
  * property the deterministic UUIDs exist to create.

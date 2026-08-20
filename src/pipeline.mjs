@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 import { ROOT, loadControls } from './lib/load.mjs';
 import { Warehouse } from './warehouse.mjs';
 import { selectCollectors } from './collectors/registry.mjs';
-import { TABLES } from './collectors/tables.mjs';
+import { TABLES, populationTablesFor } from './collectors/tables.mjs';
 
 /**
  * collect -> load -> build -> assert.
@@ -99,12 +99,12 @@ export async function runPipeline({
     collected.filter((c) => !c.unavailable && c.population?.complete !== false).map((c) => c.table)
   );
   for (const control of controls) {
-    const sources = Object.entries(TABLES).filter(([, def]) => def.controls.includes(control.control_id));
-    const present = sources.filter(([table]) => collectedTables.has(table));
+    const sources = populationTablesFor(control.control_id);
+    const present = sources.filter((table) => collectedTables.has(table));
     if (sources.length > 0 && present.length === 0) {
       unusable.set(control.control_id, [
         ...(unusable.get(control.control_id) ?? []),
-        `no collector populated ${sources.map(([t]) => t).join(' or ')} - population unknown, not empty`,
+        `no collector populated ${sources.join(' or ')} - population unknown, not empty`,
       ]);
     }
   }
@@ -121,10 +121,38 @@ export async function runPipeline({
     }
 
     const rows = await warehouse.all(`select * from ${model}`);
+
+    // Zero rows from a population table that DID load is legitimate for an event-driven control - a
+    // quarter with no incidents is a real answer - but it is a vacuous pass for anything else.
+    if (rows.length === 0 && control.cadence !== 'event-driven') {
+      withheld.push({
+        control_id: control.control_id,
+        reasons: [
+          `the model returned no rows though ${populationTablesFor(control.control_id).join(', ')} loaded. ` +
+            'An empty population is not a passing one; check the source actually contains the members ' +
+            'this control is meant to cover.',
+        ],
+      });
+      continue;
+    }
+
     assertions.push(buildAssertion({ control, rows, asOf, fixture, prior, collected }));
   }
 
   await warehouse.close();
+
+  // A population that fails ENTIRELY, for a single reason, is far more often a missing source or a
+  // misconfigured key than an estate that is uniformly broken. Saying so costs one line and stops an
+  // analyst opening a ticket per resource on their first day.
+  for (const a of assertions) {
+    if (a.total < 5 || a.failing_count !== a.total) continue;
+    const reasons = new Set(a.failing.map((f) => f.reason));
+    if (reasons.size !== 1) continue;
+    log(
+      `  NOTE: ${a.control_id} - all ${a.total} members fail for one reason (${[...reasons][0]}). ` +
+        'That is usually a missing source or a misconfigured key rather than uniform non-compliance.'
+    );
+  }
 
   // --- write ----------------------------------------------------------------------------------
   mkdirSync(evidenceDir, { recursive: true });

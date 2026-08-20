@@ -4,14 +4,14 @@ import { rmSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { loadConfig } from '../src/config.mjs';
+import { loadConfig, EXAMPLE_CONFIG } from '../src/config.mjs';
 import { runPipeline, buildAssertion, firstObserved } from '../src/pipeline.mjs';
 import { render } from '../src/warehouse.mjs';
 import { parseCsv, readCsvObjects, normaliseEntityName, csvBool } from '../src/collectors/lib/csv.mjs';
 import { grade as gradeEntra, normaliseMethod } from '../src/collectors/entra-identities.mjs';
 import { classify } from '../src/collectors/lib/graph.mjs';
 import { selectCollectors } from '../src/collectors/registry.mjs';
-import { TABLES, columnType } from '../src/collectors/tables.mjs';
+import { TABLES, columnType, populationTablesFor } from '../src/collectors/tables.mjs';
 
 // ---------------------------------------------------------------------------------------------
 // CSV. The universal adapter, so its edge cases are the ones an analyst will actually hit.
@@ -130,6 +130,43 @@ test('landing columns get real types, not everything-as-text', () => {
   assert.equal(columnType('legal_name'), 'VARCHAR');
 });
 
+// ---------------------------------------------------------------------------------------------
+// Population vs reference. A live run asserted the Section 889 control 0 of 0 passing, tier 4, with
+// no fixture stamp, because the covered-manufacturer LOOKUP had loaded while the component
+// inventory had not. Having the list proves nothing about the population.
+// ---------------------------------------------------------------------------------------------
+test('every table declares whether it is a population or a reference', () => {
+  for (const [name, def] of Object.entries(TABLES)) {
+    assert.ok(['population', 'reference'].includes(def.role), `${name} has no role`);
+  }
+});
+
+test('a reference list alone never makes a control assertable', () => {
+  // The covered-telecom list feeds the 889 control but is not its denominator.
+  assert.equal(TABLES.src_reference_covered_telecom.role, 'reference');
+  const population = populationTablesFor('ctl.scrm.procurement.telecom-equipment-attestation');
+  assert.deepEqual(population, ['src_inventory_components']);
+  assert.ok(!population.includes('src_reference_covered_telecom'));
+});
+
+test('the supplier master is the population for 1260H screening, not for 889', () => {
+  // The 889 model reads the component inventory and never touches the supplier master, so claiming
+  // it here made the control look assertable off the wrong table.
+  assert.deepEqual(TABLES.src_procurement_supplier_master.controls, [
+    'ctl.scrm.procurement.entity-list-screening',
+  ]);
+});
+
+test('every control has at least one population table', () => {
+  const claimed = new Set(Object.values(TABLES).flatMap((d) => d.controls));
+  for (const controlId of claimed) {
+    assert.ok(
+      populationTablesFor(controlId).length > 0,
+      `${controlId} is fed only by reference lists - it can never be asserted`
+    );
+  }
+});
+
 test('every table declares which controls depend on it', () => {
   for (const [name, def] of Object.entries(TABLES)) {
     assert.ok(def.controls.length > 0, `${name} feeds no control`);
@@ -230,7 +267,7 @@ test('a subject that recovered and failed again starts a NEW clock', () => {
 test('the fixture pipeline runs end to end and withholds what it cannot establish', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'ccp-'));
   try {
-    const config = { ...loadConfig(), warehouse: { engine: 'duckdb', path: ':memory:' }, evidence: { path: dir } };
+    const config = { ...loadConfig(EXAMPLE_CONFIG), warehouse: { engine: 'duckdb', path: ':memory:' }, evidence: { path: dir } };
     const result = await runPipeline({ config, fixture: true, asOf: '2026-08-20T00:00:00Z', log: () => {} });
 
     assert.ok(result.assertions.length >= 5, 'the bundled fixtures should assert most controls');
@@ -254,7 +291,7 @@ test('the fixture pipeline runs end to end and withholds what it cannot establis
 test('the never-screened supplier and the unresolved manufacturer are both caught', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'ccp-'));
   try {
-    const config = { ...loadConfig(), warehouse: { engine: 'duckdb', path: ':memory:' }, evidence: { path: dir } };
+    const config = { ...loadConfig(EXAMPLE_CONFIG), warehouse: { engine: 'duckdb', path: ':memory:' }, evidence: { path: dir } };
     const result = await runPipeline({ config, fixture: true, asOf: '2026-08-20T00:00:00Z', log: () => {} });
 
     const screening = result.assertions.find((a) => a.control_id === 'ctl.scrm.procurement.entity-list-screening');
@@ -276,7 +313,7 @@ test('the never-screened supplier and the unresolved manufacturer are both caugh
 test('a correctly triaged non-reportable incident passes rather than failing for having no report', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'ccp-'));
   try {
-    const config = { ...loadConfig(), warehouse: { engine: 'duckdb', path: ':memory:' }, evidence: { path: dir } };
+    const config = { ...loadConfig(EXAMPLE_CONFIG), warehouse: { engine: 'duckdb', path: ':memory:' }, evidence: { path: dir } };
     const result = await runPipeline({ config, fixture: true, asOf: '2026-08-20T00:00:00Z', log: () => {} });
     const ir = result.assertions.find((a) => a.control_id === 'ctl.ir.dibnet.incident-reporting');
 

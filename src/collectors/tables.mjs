@@ -13,10 +13,20 @@
  *
  * `required` is what a control genuinely cannot be evaluated without. Everything else may be blank,
  * and a blank is carried as unknown rather than being invented.
+ *
+ * `role` is load-bearing and was learned the hard way. A POPULATION table is the denominator of
+ * the controls it lists: if it was never collected, those controls cannot be asserted at all. A
+ * REFERENCE table is a list a control joins against - the 1260H entities, the covered
+ * manufacturers. Having the lookup proves nothing whatsoever about the population.
+ *
+ * Conflating the two made a live run assert the Section 889 control 0 of 0 passing, at confidence
+ * tier 4 and with no fixture stamp, purely because the covered-manufacturer list had loaded while
+ * the component inventory had not. Only population tables make a control assertable.
  */
 
 export const TABLES = {
   src_enclave_idp_users_snapshot: {
+    role: 'population',
     describes: 'Human identities in the enclave identity provider',
     controls: ['ctl.iam.cui-enclave.mfa'],
     required: ['user_id', 'status', 'user_type', 'factor_count'],
@@ -35,6 +45,7 @@ export const TABLES = {
     ],
   },
   src_corp_idp_users_snapshot: {
+    role: 'population',
     describes: 'Human identities in the corporate identity provider (outside the assessed boundary)',
     controls: ['ctl.iam.corp-it.mfa'],
     required: ['user_id', 'status', 'user_type', 'factor_count'],
@@ -50,12 +61,14 @@ export const TABLES = {
     ],
   },
   src_cmdb_assets_snapshot: {
+    role: 'population',
     describes: 'Assets the CMDB believes are inside the CUI boundary',
     controls: ['ctl.cui.boundary.asset-inventory'],
     required: ['asset_id'],
     columns: ['snapshot_at', 'asset_id', 'asset_type', 'owner', 'classification', 'in_cui_boundary'],
   },
   src_cloud_resources: {
+    role: 'population',
     describes: 'Resources the cloud provider actually reports in the enclave subscriptions/accounts',
     controls: ['ctl.cui.boundary.asset-inventory'],
     required: ['resource_id'],
@@ -70,17 +83,16 @@ export const TABLES = {
     ],
   },
   src_mdm_devices_snapshot: {
+    role: 'population',
     describes: 'Managed endpoints enrolled in the enclave',
     controls: ['ctl.cui.boundary.asset-inventory'],
     required: ['device_id'],
     columns: ['snapshot_at', 'device_id', 'assigned_user', 'enclave_enrolled', 'agent_last_seen'],
   },
   src_procurement_supplier_master: {
+    role: 'population',
     describes: 'Suppliers and subcontractors - the population for BOTH 1260H and 889',
-    controls: [
-      'ctl.scrm.procurement.entity-list-screening',
-      'ctl.scrm.procurement.telecom-equipment-attestation',
-    ],
+    controls: ['ctl.scrm.procurement.entity-list-screening'],
     required: ['supplier_id', 'legal_name', 'relationship_status'],
     columns: [
       'snapshot_at',
@@ -95,6 +107,7 @@ export const TABLES = {
     ],
   },
   src_inventory_components: {
+    role: 'population',
     describes: 'Hardware and software components resolved to a manufacturer',
     controls: ['ctl.scrm.procurement.telecom-equipment-attestation'],
     required: ['component_id', 'manufacturer_raw'],
@@ -111,6 +124,7 @@ export const TABLES = {
     ],
   },
   src_ir_incidents: {
+    role: 'population',
     describes: 'Incident records, INCLUDING those triaged as not reportable',
     controls: ['ctl.ir.dibnet.incident-reporting'],
     required: ['incident_id', 'discovered_at'],
@@ -130,12 +144,14 @@ export const TABLES = {
     ],
   },
   src_dibnet_submissions: {
+    role: 'population',
     describes: 'DIBNet submission receipts, keyed back to the incident',
     controls: ['ctl.ir.dibnet.incident-reporting'],
     required: ['incident_id'],
     columns: ['incident_id', 'submitted_at', 'accepted_at', 'report_control_number', 'dc3_malware_submitted_at'],
   },
   src_reference_entity_list_1260h: {
+    role: 'reference',
     describes: 'The published Section 1260H list. NOT shipped with this repository - see SETUP.md',
     controls: ['ctl.scrm.procurement.entity-list-screening'],
     required: ['entity_name'],
@@ -150,12 +166,14 @@ export const TABLES = {
     ],
   },
   src_reference_fasc_orders: {
+    role: 'reference',
     describes: 'FASC exclusion and removal orders - a separate statute, the same population question',
     controls: ['ctl.scrm.procurement.entity-list-screening'],
     required: ['entity_name'],
     columns: ['order_issued_at', 'snapshot_ingested_at', 'entity_name', 'normalised_name', 'order_type', 'covered_scope'],
   },
   src_reference_covered_telecom: {
+    role: 'reference',
     describes: 'Covered telecommunications manufacturers under Section 889',
     controls: ['ctl.scrm.procurement.telecom-equipment-attestation'],
     required: ['manufacturer_name'],
@@ -187,6 +205,12 @@ export function columnType(name) {
   }
   return 'VARCHAR';
 }
+
+/** Tables that are the denominator for a control, as opposed to a list it joins against. */
+export const populationTablesFor = (controlId) =>
+  Object.entries(TABLES)
+    .filter(([, def]) => def.role === 'population' && def.controls.includes(controlId))
+    .map(([table]) => table);
 
 export const tableNames = () => Object.keys(TABLES);
 

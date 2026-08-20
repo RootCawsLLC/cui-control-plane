@@ -60,6 +60,23 @@ things came out of it:
   of 82 unowned - one config mistake wearing the costume of 82 findings. Now `cloud.owner_tag` and
   `cloud.classification_tag`, with the pipeline warning when an entire estate misses the key.
 
+A full pipeline run against that account then found two more, both of which had been live since the
+collector layer was written:
+
+- **A reference list made a control assertable.** `TABLES[].controls` conflated "this table is the
+  population" with "this table is a list the control joins against", so the Section 889 control
+  asserted 0 of 0 passing - confidence tier 4, no fixture stamp - purely because the
+  covered-manufacturer lookup had loaded while the component inventory had not. Tables now carry a
+  `role`, and only `population` tables make a control assertable.
+- **The supplier master claimed the 889 control** it never reads. The 889 model reads the component
+  inventory; the supplier master is the population for 1260H screening only.
+
+The run is otherwise sound: 82 real resources, one control asserted at tier 4 with no fixture stamp,
+five withheld, and the OSCAL package emitted without the NOT REAL EVIDENCE marking - proving the
+stamp is driven by the data rather than hardcoded. All 82 fail `unmanaged_asset_absent_from_cmdb`
+because the account has no CMDB source, which the pipeline now calls out rather than presenting as
+82 findings.
+
 Refreshing the lab session non-interactively: `aws sso login --profile grc-smoke --use-device-code
 --no-browser` prints a code completable from any device. Plain `--no-browser` uses a localhost
 redirect on CLI v2.36 and only works from a browser on that machine.

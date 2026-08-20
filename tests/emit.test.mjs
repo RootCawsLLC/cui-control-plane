@@ -9,6 +9,7 @@ import { componentDefinition } from '../src/oscal/component-definition.mjs';
 import { assessmentResults } from '../src/oscal/assessment-results.mjs';
 import { poam, segmentDurations } from '../src/oscal/poam.mjs';
 import { ssp } from '../src/oscal/ssp.mjs';
+import { assessmentPlan } from '../src/oscal/assessment-plan.mjs';
 
 const assertions = loadAssertions('fixtures/assertions');
 
@@ -31,6 +32,7 @@ const emitters = {
   'profile-cmmc-l2': () => profiles()[0].doc,
   'profile-scrm': () => profiles()[1].doc,
   'component-definition': () => componentDefinition(),
+  'assessment-plan': () => assessmentPlan(),
   'assessment-results': () => assessmentResults(assertions),
   poam: () => poam(assertions).doc,
   ssp: () => ssp(assertions),

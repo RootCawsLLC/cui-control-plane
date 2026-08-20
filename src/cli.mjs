@@ -13,6 +13,7 @@ import { componentDefinition } from './oscal/component-definition.mjs';
 import { assessmentResults } from './oscal/assessment-results.mjs';
 import { poam } from './oscal/poam.mjs';
 import { ssp } from './oscal/ssp.mjs';
+import { assessmentPlan } from './oscal/assessment-plan.mjs';
 
 const USAGE = `ccp - CUI control plane
 
@@ -90,6 +91,7 @@ function main(argv) {
     write('oscal-catalog.json', catalog());
     for (const p of profiles()) write(`oscal-profile-${p.key}.json`, p.doc);
     write('oscal-component-definition.json', componentDefinition());
+    write('oscal-assessment-plan.json', assessmentPlan());
     write('oscal-assessment-results.json', assessmentResults(assertions));
 
     const p = poam(assertions);

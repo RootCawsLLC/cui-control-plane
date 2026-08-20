@@ -1,4 +1,4 @@
-import { ids, metadata, sortKeys, ref, resource, crosswalkHref } from './common.mjs';
+import { ids, metadata, sortKeys, ref, resource, crosswalkHref, PROPS_NS } from './common.mjs';
 import { loadControls, loadRequirementIndex } from '../lib/load.mjs';
 
 /**
@@ -43,11 +43,16 @@ function groupsByDomain(controls) {
       controls: group.map((c) => ({
         id: c.control_id,
         title: c.title,
+        // Only `label` belongs in OSCAL's own namespace. Prop names there are constrained, and
+        // `status` in particular has a fixed allowed-values list (`withdrawn`) that our lifecycle
+        // states are not part of - emitting `status: building` unnamespaced is a constraint
+        // violation, not an extension. Anything of ours rides on PROPS_NS, which is exactly what a
+        // namespace is for.
         props: [
           { name: 'label', value: c.control_id },
-          { name: 'status', value: c.status },
-          { name: 'layer', value: c.layer },
-          { name: 'owner', value: c.owner },
+          { ns: PROPS_NS, name: 'status', value: c.status },
+          { ns: PROPS_NS, name: 'layer', value: c.layer },
+          { ns: PROPS_NS, name: 'owner', value: c.owner },
         ],
         parts: [
           // The assertion is the statement. It is ours, it quantifies over a population, and it is

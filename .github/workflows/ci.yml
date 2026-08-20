@@ -81,9 +81,17 @@ jobs:
       - run: npm ci
       - run: npm run emit
 
+      # The npm wrapper downloads the Java CLI on first use and exits WITHOUT validating that
+      # first file - so whichever document came first in the loop silently produced no result.
+      # This step absorbs the bootstrap; every file including this one is then validated for real
+      # below, so the `|| true` here hides nothing.
+      - name: Bootstrap NIST oscal-cli
+        run: npx --yes oscal@2.0.7 validate --file out/oscal-catalog.json || true
+
       - name: Validate against the OSCAL schemas
         run: |
-          for f in catalog component-definition assessment-results poam ssp; do
+          for f in catalog profile-cmmc-l2 profile-scrm component-definition \
+                   assessment-plan assessment-results poam ssp; do
             echo "::group::oscal validate out/oscal-$f.json"
             npx --yes oscal@2.0.7 validate --file "out/oscal-$f.json"
             echo "::endgroup::"

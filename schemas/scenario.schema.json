@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/scenario.schema.json",
+  "title": "Risk scenario",
+  "description": "The join between controls and risk. A control with no scenario is unpriced - either find its scenario or ask why the control exists. Scenarios here carry STRUCTURE and no numbers: nothing in this repository has the loss data or the control measurement to quantify them yet, and a range with no provenance must not look as authoritative as one with six sourced parameters. The quantification hooks are declared and left null rather than guessed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scenario_id", "title", "threat_community", "asset", "effect", "loss_event", "status"],
+  "properties": {
+    "scenario_id": {
+      "description": "scn.<class>.<specific>. Referenced by control records; the validator refuses a control pointing at a scenario that does not exist here.",
+      "type": "string",
+      "pattern": "^scn\\.[a-z0-9-]+\\.[a-z0-9-]+$"
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "loss_event": {
+      "description": "The loss event itself, stated so that a frequency could be counted against it. Not a hazard and not a control gap - 'CUI is exfiltrated from the enclave' is a loss event; 'MFA is missing' is a control deficiency and belongs on a control record instead.",
+      "type": "string",
+      "minLength": 1
+    },
+    "threat_community": {
+      "description": "Who or what acts. Named specifically enough that Threat Capability could be estimated against it later.",
+      "type": "string",
+      "minLength": 1
+    },
+    "asset": { "type": "string", "minLength": 1 },
+    "effect": {
+      "description": "Which security objective the loss event lands on. Several is normal.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "enum": ["confidentiality", "integrity", "availability"] }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["identified", "quantified", "retired"]
+    },
+    "loss_forms": {
+      "description": "Which loss forms are in play if this event occurs. Structure only - no magnitudes. Contractual and regulatory forms dominate in this domain, which is why they are named separately from the usual response and replacement costs.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "response",
+          "replacement",
+          "productivity",
+          "fines-and-judgements",
+          "competitive-advantage",
+          "reputation",
+          "contractual"
+        ]
+      }
+    },
+    "quantification": {
+      "description": "Deliberately null until there is something to put here. Populating these from intuition is the failure this repository is built to avoid; they become computable once the pipeline has produced Variance Frequency and Variance Duration on the controls that serve this scenario.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lef": { "type": ["object", "null"] },
+        "lm": { "type": ["object", "null"] },
+        "confidence_tier": { "type": ["integer", "null"], "minimum": 1, "maximum": 4 },
+        "blocked_on": { "type": "string" }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

@@ -41,14 +41,17 @@ function main(argv) {
   }
 
   if (command === 'validate') {
-    const { errors, warnings, controlCount } = validate();
+    const { errors, warnings, controlCount, scenarioCount, exceptionCount } = validate();
     for (const w of warnings) console.warn(`warn  ${w}`);
     for (const e of errors) console.error(`error ${e}`);
     if (errors.length > 0) {
       console.error(`\n${errors.length} error(s) across ${controlCount} control(s).`);
       return 1;
     }
-    console.log(`ok: ${controlCount} control(s), ${warnings.length} warning(s).`);
+    console.log(
+      `ok: ${controlCount} control(s), ${scenarioCount} scenario(s), ${exceptionCount} exception(s), ` +
+        `${warnings.length} warning(s).`
+    );
     return 0;
   }
 

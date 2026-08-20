@@ -1,0 +1,26 @@
+# The break-glass exclusion referenced by ctl.iam.cui-enclave.mfa's coverage_basis.
+#
+# It exists as a record rather than as a sentence in the assertion because a sentence cannot
+# expire, cannot be counted, and cannot be surfaced in a generated SSP. This one can, and the
+# validator refuses it once it does.
+exception_id: EX-0041
+control_id: ctl.iam.cui-enclave.mfa
+subjects:
+  - u_break_glass_01
+  - u_break_glass_02
+  - u_break_glass_03
+reason: >-
+  Break-glass accounts cannot enrol a phishing-resistant factor without creating a dependency on
+  the same identity infrastructure they exist to recover from. They are excluded from the MFA
+  population and carried under compensating monitoring instead.
+approved_by: security-engineering
+granted_at: '2026-06-01'
+expires_at: '2026-12-31'
+compensating:
+  - Credentials held in a sealed offline store; retrieval is a two-person action.
+  - Every authentication by these identities pages the on-call security engineer.
+  - Session recording is mandatory and reviewed within one business day.
+notes: >-
+  Reduces coverage on ctl.iam.cui-enclave.mfa from 131 to 128 identities. The three accounts stay
+  in the denominator of the asset-and-identity population - they are excluded from THIS control,
+  not from existence, and conflating those two is how an exception quietly becomes a blind spot.

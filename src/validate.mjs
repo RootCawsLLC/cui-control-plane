@@ -2,7 +2,15 @@
 // point - the default one fails with "no schema with key or ref .../2020-12/schema".
 import Ajv from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-import { loadControls, loadRequirementIndex, loadSchema, fileExists, readRepoFile } from './lib/load.mjs';
+import {
+  loadControls,
+  loadRequirementIndex,
+  loadScenarios,
+  loadExceptions,
+  loadSchema,
+  fileExists,
+  readRepoFile,
+} from './lib/load.mjs';
 
 /**
  * Schema validation plus the house rules that a JSON Schema cannot express.
@@ -15,13 +23,14 @@ import { loadControls, loadRequirementIndex, loadSchema, fileExists, readRepoFil
 // Compiled once and memoised. Compiling per call re-registers the schema $id on the same Ajv
 // instance, which throws "schema with key or id ... already exists" the second time validate() is
 // called in a process - which is exactly what a test suite does.
-let compiled = null;
-function controlValidator() {
-  if (compiled) return compiled;
+const compiled = new Map();
+function schemaValidator(name) {
+  if (compiled.has(name)) return compiled.get(name);
   const ajv = new Ajv({ allErrors: true, strict: false });
   addFormats(ajv);
-  compiled = ajv.compile(loadSchema('control.schema.json'));
-  return compiled;
+  const fn = ajv.compile(loadSchema(name));
+  compiled.set(name, fn);
+  return fn;
 }
 
 const QUANTIFIERS = ['every', 'no ', 'none', 'all ', 'each'];
@@ -32,15 +41,21 @@ const QUANTIFIERS = ['every', 'no ', 'none', 'all ', 'each'];
  *   Injected rather than read from disk so that tests can prove each guard fires without writing
  *   defective records into controls/ - which races with anything else reading the inventory.
  */
-export function validate({ controls = loadControls() } = {}) {
+export function validate({
+  controls = loadControls(),
+  scenarios = loadScenarios(),
+  exceptions = loadExceptions(),
+  today = null,
+} = {}) {
   const errors = [];
   const warnings = [];
 
-  const controlSchema = controlValidator();
+  const controlSchema = schemaValidator('control.schema.json');
   const index = loadRequirementIndex();
 
   if (controls.length === 0) errors.push('no control records found in controls/');
 
+  const knownScenarios = new Set(scenarios.map((s) => s.scenario_id));
   const seen = new Map();
   // domain + final segment -> control_ids, used to detect layer splits that owe a rationale
   const splitGroups = new Map();
@@ -128,9 +143,17 @@ export function validate({ controls = loadControls() } = {}) {
       }
     }
 
-    // --- Unpriced controls ---------------------------------------------------------------
+    // --- Unpriced controls, and dangling scenario references -----------------------------
     if (!c.scenarios || c.scenarios.length === 0) {
       warnings.push(`${where}: no scenario - the control is unpriced. Find its scenario or ask why it exists.`);
+    }
+    for (const ref of c.scenarios ?? []) {
+      if (!knownScenarios.has(ref)) {
+        errors.push(
+          `${where}: references ${ref}, which is not in the scenario registry. A control pointing at ` +
+            'a scenario nobody wrote is not priced, it only looks priced.'
+        );
+      }
     }
 
     const [, domain, , leaf] = c.control_id.split('.');
@@ -167,7 +190,84 @@ export function validate({ controls = loadControls() } = {}) {
     }
   }
 
-  return { errors, warnings, controlCount: controls.length };
+  // --- Scenarios ---------------------------------------------------------------------------
+  const scenarioSchema = schemaValidator('scenario.schema.json');
+  const referenced = new Set(controls.flatMap((c) => c.scenarios ?? []));
+  for (const sc of scenarios) {
+    const where = sc._file ?? sc.scenario_id;
+    const record = { ...sc };
+    delete record._file;
+    if (!scenarioSchema(record)) {
+      for (const e of scenarioSchema.errors) {
+        errors.push(`${where}: schema ${e.instancePath || '/'} ${e.message}`);
+      }
+      continue;
+    }
+    // A scenario no control serves is either an unaddressed risk or a scenario nobody meant.
+    // Both are worth surfacing; neither is a build failure.
+    if (!referenced.has(sc.scenario_id) && sc.status !== 'retired') {
+      warnings.push(
+        `${where}: no control references this scenario - it is either an unaddressed risk or a ` +
+          'scenario nobody chose. Say which.'
+      );
+    }
+    // Quantification that appears without a confidence tier is a number with no provenance, and a
+    // range with no provenance must not read as authoritative as a sourced one.
+    const q = sc.quantification ?? {};
+    if ((q.lef || q.lm) && (q.confidence_tier === null || q.confidence_tier === undefined)) {
+      errors.push(
+        `${where}: carries a quantification with no confidence_tier. Every number carries its ` +
+          'derivation level and confidence, or it does not go in.'
+      );
+    }
+  }
+
+  // --- Exceptions --------------------------------------------------------------------------
+  // An approved exception is reduced coverage with an expiry, never a pass.
+  const exceptionSchema = schemaValidator('exception.schema.json');
+  const asOf = today ?? new Date().toISOString().slice(0, 10);
+  const knownControls = new Set(controls.map((c) => c.control_id));
+  for (const ex of exceptions) {
+    const where = ex._file ?? ex.exception_id;
+    const record = { ...ex };
+    delete record._file;
+    if (!exceptionSchema(record)) {
+      for (const e of exceptionSchema.errors) {
+        errors.push(`${where}: schema ${e.instancePath || '/'} ${e.message}`);
+      }
+      continue;
+    }
+    if (!knownControls.has(ex.control_id)) {
+      errors.push(`${where}: exception against ${ex.control_id}, which is not in the inventory.`);
+    }
+    if (ex.expires_at <= ex.granted_at) {
+      errors.push(`${where}: expires_at (${ex.expires_at}) is not after granted_at (${ex.granted_at}).`);
+    }
+    // An expired exception has silently become an undocumented control change. It is a build
+    // failure rather than a warning, because the alternative is that it stays expired forever and
+    // the population it excludes goes on being excluded without anybody re-approving it.
+    if (ex.expires_at < asOf) {
+      errors.push(
+        `${where}: EXPIRED on ${ex.expires_at} (today is ${asOf}) and is still in the register. ` +
+          'Renew it, remove it, or change the control - an expired exception is an undocumented ' +
+          'control change.'
+      );
+    }
+    if ((ex.compensating ?? []).length === 0) {
+      warnings.push(
+        `${where}: no compensating controls recorded. That is a legitimate statement - nothing ` +
+          'holds this risk down - but it is one somebody should be owning deliberately.'
+      );
+    }
+  }
+
+  return {
+    errors,
+    warnings,
+    controlCount: controls.length,
+    scenarioCount: scenarios.length,
+    exceptionCount: exceptions.length,
+  };
 }
 
 /** Pulls the population restatement out of a control model's header comment. */

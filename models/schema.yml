@@ -61,13 +61,10 @@ models:
         tests: [not_null]
       - name: passing
         tests: [not_null]
-    tests:
-      # Denominator stability. Population size is itself a control metric, so an unexplained
-      # move in the row count is a finding about the asset inventory rather than noise.
-      - dbt_utils.equal_rowcount:
-          compare_model: ref('ctl_cui_boundary_asset_inventory')
-          config:
-            severity: warn
+    # Denominator stability is checked by dbt-tests/denominator_stability.sql, which compares
+    # consecutive snapshots. It used to be an `equal_rowcount` against this same model - a
+    # tautology that compared the model to itself, could not fail, and was marked severity: warn
+    # on top of that. A check that cannot fail is decoration.
 
   - name: ctl_iam_cui_enclave_mfa
     columns:

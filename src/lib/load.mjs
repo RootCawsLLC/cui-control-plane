@@ -19,6 +19,21 @@ export function loadControls() {
 
 export const loadRequirementIndex = () => readYaml('reference/nist-800-171r2.index.yaml');
 
+/** Risk scenarios. The join from controls to loss events; see schemas/scenario.schema.json. */
+export const loadScenarios = () => loadYamlDir('scenarios', 'scenario_id');
+
+/** Approved exceptions - reduced coverage with an expiry, never a pass. */
+export const loadExceptions = () => loadYamlDir('exceptions', 'exception_id');
+
+function loadYamlDir(dir, sortKey) {
+  const abs = join(ROOT, dir);
+  if (!existsSync(abs)) return [];
+  return readdirSync(abs)
+    .filter((f) => f.endsWith('.yaml'))
+    .map((f) => ({ ...parse(readFileSync(join(abs, f), 'utf8')), _file: `${dir}/${f}` }))
+    .sort((a, b) => String(a[sortKey]).localeCompare(String(b[sortKey])));
+}
+
 export const loadWeights = (path = 'reference/sprs-weights.yaml') => readYaml(path);
 
 /**

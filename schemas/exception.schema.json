@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/exception.schema.json",
+  "title": "Control exception",
+  "description": "An approved exception is NOT a pass. It changes the intended state for a subset of the population, which is reduced coverage with an expiry - and an exception with no expiry is an undocumented control change. Modelling exceptions as records rather than as prose in coverage_basis is what makes them countable, expirable, and visible in the generated SSP.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exception_id", "control_id", "subjects", "reason", "approved_by", "granted_at", "expires_at", "compensating"],
+  "properties": {
+    "exception_id": {
+      "type": "string",
+      "pattern": "^EX-[0-9]{4}$"
+    },
+    "control_id": {
+      "description": "Must resolve to a control in the inventory. An exception against a control that does not exist is an exception against nothing.",
+      "type": "string",
+      "pattern": "^ctl\\.[a-z0-9.-]+$"
+    },
+    "subjects": {
+      "description": "The population members this exception covers, enumerated. Never a wildcard: an exception whose scope cannot be enumerated is a scope change to the control, and it belongs in population_definition where an assessor will read it.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "reason": { "type": "string", "minLength": 1 },
+    "approved_by": { "type": "string", "minLength": 1 },
+    "granted_at": { "type": "string", "format": "date" },
+    "expires_at": {
+      "description": "Mandatory. There is no such thing as a permanent exception - if the intended state has genuinely changed, change the control, do not carry an exception forever.",
+      "type": "string",
+      "format": "date"
+    },
+    "compensating": {
+      "description": "What holds the risk down while the exception stands. An empty array is legitimate and is a much stronger statement than an absent field: it says explicitly that nothing compensates, which is a decision someone has to own rather than an oversight.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  }
+}

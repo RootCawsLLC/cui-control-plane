@@ -3,6 +3,10 @@ version: 0.1.0
 config-version: 2
 profile: cui_control_plane
 model-paths: ["models"]
+# NOT the default ["tests"] - that directory holds this repository's Node test suite, and dbt
+# would try to parse .test.mjs files as singular tests. Two different kinds of test, two
+# directories, no collision.
+test-paths: ["dbt-tests"]
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
 

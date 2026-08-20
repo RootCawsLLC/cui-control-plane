@@ -94,6 +94,20 @@ const QUESTIONS = [
     when: (a) => a['cloud.provider'] === 'aws-govcloud',
   },
   {
+    key: 'cmdb.source',
+    q: 'CMDB / asset system-of-record source',
+    def: 'csv',
+    choices: ['csv', 'none'],
+    why: 'The other half of the asset inventory. The control reconciles what the CMDB claims against what the cloud reports; with only the cloud side, every asset reads as absent from the CMDB and the result says nothing.',
+  },
+  {
+    key: 'mdm.source',
+    q: 'Managed endpoint (MDM) source',
+    def: 'csv',
+    choices: ['csv', 'none'],
+    why: 'Laptops appear in neither the CMDB nor the cloud API, and are where CUI documents actually get opened.',
+  },
+  {
     key: 'procurement.source',
     q: 'Supplier master source',
     def: 'csv',
@@ -137,6 +151,8 @@ export function buildConfig(answers) {
   c.boundary ??= { approach: 'enclave', name: 'CUI enclave' };
   c.identity ??= { provider: 'none' };
   c.cloud ??= { provider: 'none' };
+  c.cmdb ??= { source: 'none' };
+  c.mdm ??= { source: 'none' };
   c.procurement ??= { source: 'none' };
   c.inventory ??= { source: 'none' };
   c.incident_response ??= { source: 'none' };
@@ -150,7 +166,9 @@ export function buildConfig(answers) {
     c.incident_response.submissions_path ??= 'inbox/dibnet-submissions.csv';
   }
   if (c.identity.provider === 'csv') c.identity.csv_path ??= 'inbox/identities.csv';
-  if (c.cloud.provider === 'csv') c.cloud.csv_path ??= 'inbox/assets.csv';
+  if (c.cloud.provider === 'csv') c.cloud.csv_path ??= 'inbox/cloud-resources.csv';
+  if (c.cmdb.source === 'csv') c.cmdb.assets_path ??= 'inbox/cmdb-assets.csv';
+  if (c.mdm.source === 'csv') c.mdm.devices_path ??= 'inbox/mdm-devices.csv';
 
   c.reference = {
     covered_telecom_path: 'reference/covered-telecom.seed.csv',

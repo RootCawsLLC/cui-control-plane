@@ -122,6 +122,45 @@ this quarter, and the 1260H and 889 controls have no API to automate against any
 manual extract on a defined cadence is legitimate evidence. What is *not* legitimate is pretending
 it is continuous — so `doctor` reports how old each file is and warns past 45 days.
 
+### The asset inventory needs two sources, not one
+
+The boundary asset control is a **reconciliation**, and it is the denominator every other
+CUI-scoped control is a subset of. It compares what your CMDB *claims* is in the boundary against
+what the cloud *actually reports*, because the two answers disagree and the disagreement is the
+finding:
+
+- in the cloud, absent from the CMDB → an **unmanaged asset**, which is what the control fails on;
+- in the CMDB, absent from the cloud → a **stale record**, which is a data-quality problem.
+
+With only one side wired the control cannot tell those apart, and it does not fail loudly — it
+reports its own missing source as though it were a fact about your estate. A cloud-only estate
+returns *every* asset as absent from the CMDB; a CMDB-only estate returns every asset as managed
+and the unmanaged-asset finding can never fire. Both look like measurements. Neither is one.
+
+So the CMDB is its own setting, independent of `cloud.provider`:
+
+```yaml
+cmdb:
+  source: csv
+  assets_path: "inbox/cmdb-assets.csv"
+
+mdm:
+  source: csv
+  devices_path: "inbox/mdm-devices.csv"
+```
+
+Required column for the CMDB export is `asset_id`; `asset_type`, `owner`, `classification` and
+`in_cui_boundary` are what the control actually grades on, so an export without `owner` and
+`classification` will fail every asset for want of them. The MDM export needs `device_id`, plus
+`assigned_user`, `enclave_enrolled` and `agent_last_seen`.
+
+Endpoints are the third leg and are worth wiring even if they feel obvious: laptops appear in
+neither the CMDB nor the cloud API, and they are where CUI documents actually get opened.
+
+`npm run doctor` warns when either half is missing, and `npm run pipeline` flags any control whose
+whole population fails for one single reason — the signature of a missing source rather than an
+estate in uniform breach.
+
 ### Path B — Entra ID (continuous, needs an app registration)
 
 This is the one that turns MFA coverage into a live control.
@@ -226,7 +265,8 @@ Ordered by how soon it will bite you.
 | Area | Where | Notes |
 |---|---|---|
 | CUI boundary | `ccp.config.yaml` → `boundary` | Decision, not a setting |
-| Sources | `ccp.config.yaml` → `identity`, `cloud`, `procurement`, `inventory`, `incident_response` | Start CSV, upgrade to API |
+| Sources | `ccp.config.yaml` → `identity`, `cloud`, `cmdb`, `mdm`, `procurement`, `inventory`, `incident_response` | Start CSV, upgrade to API |
+| **Asset reconciliation** | `cloud` **and** `cmdb` (and `mdm`) | Both halves, or the control restates one source instead of reconciling two. One half alone is not a measurement |
 | Government endpoints | `identity.cloud_environment`, `identity.org_url`, `cloud.region` | GCC High, okta-gov.com and GovCloud all use different hosts or partitions |
 | **Asset tag keys** | `cloud.owner_tag`, `cloud.classification_tag` | Defaults are `owner` / `data_classification`. **Check these first** if the inventory reports everything unowned - it is usually the wrong tag key, not universal non-compliance |
 | 1260H list | `inbox/entity-list-1260h.csv` | Refresh on a schedule |

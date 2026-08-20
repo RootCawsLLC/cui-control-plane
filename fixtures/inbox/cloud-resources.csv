@@ -1,0 +1,10 @@
+resource_id,resource_type,owner_tag,data_classification_tag,subscription_id,location
+vm-enclave-app-01,virtual-machine,platform-team,cui,sub-enclave-01,usgovvirginia
+vm-enclave-app-02,virtual-machine,platform-team,cui,sub-enclave-01,usgovvirginia
+vm-enclave-db-01,database,data-team,cui,sub-enclave-01,usgovvirginia
+st-enclave-artifacts,storage-account,platform-team,cui,sub-enclave-01,usgovvirginia
+st-enclave-scratch,storage-account,platform-team,,sub-enclave-01,usgovvirginia
+kv-enclave-secrets,key-vault,security-engineering,cui,sub-enclave-01,usgovvirginia
+vm-enclave-build-01,virtual-machine,,cui,sub-enclave-01,usgovvirginia
+st-enclave-shadow,storage-account,,,sub-enclave-01,usgovvirginia
+vm-enclave-rogue-01,virtual-machine,,,sub-enclave-01,usgovarizona

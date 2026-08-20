@@ -15,8 +15,18 @@ sources:
     tables:
       - name: users_snapshot
   - name: cmdb
+    description: >-
+      The asset system of record. Reconciled AGAINST the cloud source rather than trusted: a record
+      here the cloud does not confirm is stale, and a cloud resource absent here is unmanaged.
     tables:
       - name: assets_snapshot
+  - name: cloud
+    description: >-
+      Provider-neutral landing table for whichever cloud collector ran - Azure Resource Graph, AWS
+      Config, or a CSV export. The models do not know which, so adding a provider is a collector
+      rather than a fork of the model.
+    tables:
+      - name: resources
   - name: aws_govcloud
     description: >-
       AWS GovCloud Config. History-native, which is why it is the posture source rather than a

@@ -35,6 +35,17 @@ export const REQUIRED_ENV = {
  * cares about the stronger property. The control asserts the stronger one; a company that has not
  * got there yet should widen this list AND know that it has.
  */
+/**
+ * Okta names the same factors differently, so the default has to follow the provider. Carrying
+ * Entra's vocabulary into an Okta deployment would quietly mark every phishing-resistant factor as
+ * not resistant, and the control would fail everyone for the wrong reason.
+ */
+export const DEFAULT_PHISHING_RESISTANT_OKTA = [
+  'webauthn',
+  'u2f',
+  'signed_nonce',
+];
+
 export const DEFAULT_PHISHING_RESISTANT = [
   'fido2SecurityKey',
   'passKeyDeviceBound',
@@ -101,7 +112,9 @@ function withDefaults(config) {
     identity: {
       cloud_environment: 'commercial',
       exclude_guests: true,
-      phishing_resistant_methods: DEFAULT_PHISHING_RESISTANT,
+      phishing_resistant_methods:
+        config.identity?.phishing_resistant_methods ??
+        (config.identity?.provider === 'okta' ? DEFAULT_PHISHING_RESISTANT_OKTA : DEFAULT_PHISHING_RESISTANT),
       ...config.identity,
     },
     reference: {

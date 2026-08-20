@@ -140,18 +140,33 @@ test('every table declares which controls depend on it', () => {
 // ---------------------------------------------------------------------------------------------
 // Collector selection is explicit, never "whatever credentials happen to exist".
 // ---------------------------------------------------------------------------------------------
-test('an unbuilt provider is skipped with a route to a working alternative', () => {
+test('a provider of none is skipped with the consequence stated', () => {
   const { chosen, skipped } = selectCollectors({
-    identity: { provider: 'okta' },
+    identity: { provider: 'none' },
     cloud: { provider: 'none' },
     procurement: {},
     inventory: {},
     incident_response: {},
     reference: {},
   });
-  assert.ok(!chosen.some((c) => c.name.includes('okta')));
-  const okta = skipped.find((s) => s.name === 'okta-identities');
-  assert.match(okta.reason, /identity.provider: csv/);
+  assert.ok(!chosen.some((c) => c.controls.includes('ctl.iam.cui-enclave.mfa')));
+  assert.match(skipped.find((s) => s.name === 'identity').reason, /no population/);
+});
+
+test('every collector exports a table that is a real landing table', () => {
+  // Exporting a bare suffix instead of the full name made the registry record a table that is not
+  // a key in TABLES, and the withholding logic silently could not find it.
+  for (const provider of ['entra', 'okta', 'csv']) {
+    const { chosen } = selectCollectors({
+      identity: { provider },
+      cloud: { provider: 'none' },
+      procurement: {},
+      inventory: {},
+      incident_response: {},
+      reference: {},
+    });
+    for (const c of chosen) assert.ok(TABLES[c.table], `${c.name} exports unknown table ${c.table}`);
+  }
 });
 
 // ---------------------------------------------------------------------------------------------

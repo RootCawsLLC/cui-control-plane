@@ -5,15 +5,31 @@
   "description": "The one file an organisation edits. Everything else in this repository is meant to work unchanged. Created by `ccp init`, checked by `ccp doctor`, and read by every collector. NO CREDENTIALS LIVE HERE - secrets come from environment variables, named in this file but never valued in it, so the config can be committed to your own repository without a secret-scanning incident.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["organization", "boundary", "identity", "cloud", "procurement", "inventory", "incident_response", "warehouse"],
+  "required": [
+    "organization",
+    "boundary",
+    "identity",
+    "cloud",
+    "procurement",
+    "inventory",
+    "incident_response",
+    "warehouse"
+  ],
   "properties": {
     "organization": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "cage_code": { "type": "string" },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cage_code": {
+          "type": "string"
+        },
         "affirming_official": {
           "description": "The named person who affirms in SPRS. Recorded because the affirmation is a personal attestation with real exposure, not a system action - nothing in this tool ever performs it.",
           "type": "string"
@@ -23,81 +39,187 @@
     "boundary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["approach", "name"],
+      "required": [
+        "approach",
+        "name"
+      ],
       "properties": {
         "approach": {
           "description": "The Phase 0 decision everything else follows from. `enclave` isolates CUI to a defined boundary and is the recommended default; `enterprise` puts the whole estate in scope and multiplies assessment cost, control count and SSP surface.",
           "type": "string",
-          "enum": ["enclave", "enterprise"]
+          "enum": [
+            "enclave",
+            "enterprise"
+          ]
         },
-        "name": { "type": "string", "minLength": 1 }
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "identity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["provider"],
+      "required": [
+        "provider"
+      ],
       "properties": {
-        "provider": { "type": "string", "enum": ["entra", "okta", "csv", "none"] },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "entra",
+            "okta",
+            "csv",
+            "none"
+          ]
+        },
         "cloud_environment": {
           "description": "GCC High and DoD tenants do NOT use graph.microsoft.com - they use graph.microsoft.us with a different login host. Getting this wrong is the most common reason a DIB tenant returns 401 against code that works fine in commercial.",
           "type": "string",
-          "enum": ["commercial", "usgov"]
+          "enum": [
+            "commercial",
+            "usgov"
+          ]
         },
-        "tenant_id": { "type": "string" },
-        "domain": { "type": "string" },
-        "exclude_guests": { "type": "boolean" },
+        "tenant_id": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "exclude_guests": {
+          "type": "boolean"
+        },
         "break_glass_attribute": {
           "description": "The user attribute marking a break-glass account. An attribute, never a name pattern: a naming convention is not an access control, and matching on one means the population silently changes when somebody renames an account.",
           "type": "string"
         },
-        "break_glass_value": { "type": "string" },
+        "break_glass_value": {
+          "type": "string"
+        },
         "phishing_resistant_methods": {
           "description": "Which registered methods count as phishing-resistant for this organisation. Configurable because the answer is a policy decision, not a fact.",
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
-        "csv_path": { "type": "string" }
+        "csv_path": {
+          "type": "string"
+        },
+        "org_url": {
+          "description": "Okta org URL, e.g. https://acme.okta.com or https://acme.okta-gov.com. Government orgs are on okta-gov.com and okta.mil - the same trap as graph.microsoft.us.",
+          "type": "string"
+        }
       }
     },
     "cloud": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["provider"],
+      "required": [
+        "provider"
+      ],
       "properties": {
-        "provider": { "type": "string", "enum": ["azure", "azure-gov", "aws-govcloud", "csv", "none"] },
-        "subscriptions": { "type": "array", "items": { "type": "string" } },
-        "resource_groups": { "type": "array", "items": { "type": "string" } },
-        "accounts": { "type": "array", "items": { "type": "string" } },
-        "csv_path": { "type": "string" }
+        "provider": {
+          "type": "string",
+          "enum": [
+            "azure",
+            "azure-gov",
+            "aws-govcloud",
+            "csv",
+            "none"
+          ]
+        },
+        "subscriptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resource_groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "csv_path": {
+          "type": "string"
+        },
+        "region": {
+          "description": "Primary region. AWS GovCloud is us-gov-west-1 or us-gov-east-1 - a commercial region here silently queries the wrong partition.",
+          "type": "string"
+        },
+        "aggregator": {
+          "description": "AWS Config aggregator name. With one, a single query spans every declared account; without one, only the account the ambient credential belongs to is read - and the collector says so rather than implying it covered them all.",
+          "type": "string"
+        }
       }
     },
     "procurement": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source"],
+      "required": [
+        "source"
+      ],
       "properties": {
-        "source": { "type": "string", "enum": ["csv", "none"] },
-        "supplier_master_path": { "type": "string" }
+        "source": {
+          "type": "string",
+          "enum": [
+            "csv",
+            "none"
+          ]
+        },
+        "supplier_master_path": {
+          "type": "string"
+        }
       }
     },
     "inventory": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source"],
+      "required": [
+        "source"
+      ],
       "properties": {
-        "source": { "type": "string", "enum": ["csv", "none"] },
-        "components_path": { "type": "string" }
+        "source": {
+          "type": "string",
+          "enum": [
+            "csv",
+            "none"
+          ]
+        },
+        "components_path": {
+          "type": "string"
+        }
       }
     },
     "incident_response": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source"],
+      "required": [
+        "source"
+      ],
       "properties": {
-        "source": { "type": "string", "enum": ["csv", "none"] },
-        "incidents_path": { "type": "string" },
-        "submissions_path": { "type": "string" }
+        "source": {
+          "type": "string",
+          "enum": [
+            "csv",
+            "none"
+          ]
+        },
+        "incidents_path": {
+          "type": "string"
+        },
+        "submissions_path": {
+          "type": "string"
+        }
       }
     },
     "reference": {
@@ -108,29 +230,44 @@
           "description": "A CSV of the current published Section 1260H list. This repository does NOT ship the list - it changes on a recurring cadence and a stale copy is worse than none, because a supplier screened against it reads as screened.",
           "type": "string"
         },
-        "covered_telecom_path": { "type": "string" },
-        "fasc_orders_path": { "type": "string" }
+        "covered_telecom_path": {
+          "type": "string"
+        },
+        "fasc_orders_path": {
+          "type": "string"
+        }
       }
     },
     "warehouse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["engine"],
+      "required": [
+        "engine"
+      ],
       "properties": {
         "engine": {
           "description": "duckdb runs locally with no server and no Python, which is what makes this repository runnable on a laptop the day you clone it. The SQL models stay dbt-compatible, so a real warehouse is a migration rather than a rewrite.",
           "type": "string",
-          "enum": ["duckdb"]
+          "enum": [
+            "duckdb"
+          ]
         },
-        "path": { "type": "string" }
+        "path": {
+          "type": "string"
+        }
       }
     },
     "evidence": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "path": { "type": "string" },
-        "retain_days": { "type": "integer", "minimum": 1 }
+        "path": {
+          "type": "string"
+        },
+        "retain_days": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     }
   }

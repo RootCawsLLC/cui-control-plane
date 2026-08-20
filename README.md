@@ -56,7 +56,7 @@ repository is organised around **one** control inventory that each regime crossw
 ```
 ccp.config.yaml      THE ONE FILE YOU EDIT (gitignored; `npm run init` writes it)
 inbox/               drop CSV exports here - the universal adapter, no credentials needed
-src/collectors/      Entra ID, Azure Resource Graph, and CSV for everything else
+src/collectors/      Entra ID, Okta, Azure Resource Graph, AWS Config, and CSV for everything else
 src/warehouse.mjs    DuckDB + a dbt shim, so the models run without Python
 src/pipeline.mjs     collect -> load -> build -> assert
 controls/            the inventory - one YAML record per control

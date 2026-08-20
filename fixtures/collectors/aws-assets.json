@@ -1,0 +1,43 @@
+{
+  "_comment": "NOT REAL EVIDENCE. Shapes match AWS Config SelectResourceConfig results (each Results entry is a JSON string, already parsed here). Deliberately uses all THREE tag shapes Config returns - list of {key,value}, map, and list of 'k=v' strings - because handling only one silently drops the owner tag and turns correctly-tagged resources into inventory findings.",
+  "results": [
+    {
+      "resourceId": "i-0aa11bb22cc33dd44",
+      "resourceType": "AWS::EC2::Instance",
+      "awsRegion": "us-gov-west-1",
+      "accountId": "123456789012",
+      "tags": [
+        { "key": "owner", "value": "platform-team" },
+        { "key": "data_classification", "value": "cui" }
+      ]
+    },
+    {
+      "resourceId": "i-0aa11bb22cc33dd55",
+      "resourceType": "AWS::EC2::Instance",
+      "awsRegion": "us-gov-west-1",
+      "accountId": "123456789012",
+      "tags": { "owner": "platform-team", "data_classification": "cui" }
+    },
+    {
+      "resourceId": "enclave-artifacts-7731",
+      "resourceType": "AWS::S3::Bucket",
+      "awsRegion": "us-gov-west-1",
+      "accountId": "123456789012",
+      "tags": ["owner=platform-team", "data_classification=cui"]
+    },
+    {
+      "resourceId": "enclave-scratch-0042",
+      "resourceType": "AWS::S3::Bucket",
+      "awsRegion": "us-gov-west-1",
+      "accountId": "123456789012",
+      "tags": [{ "key": "owner", "value": "platform-team" }]
+    },
+    {
+      "resourceId": "db-enclave-reporting-02",
+      "resourceType": "AWS::RDS::DBInstance",
+      "awsRegion": "us-gov-west-1",
+      "accountId": "123456789012",
+      "tags": []
+    }
+  ]
+}

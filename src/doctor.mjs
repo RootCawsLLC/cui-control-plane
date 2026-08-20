@@ -133,6 +133,7 @@ function providerFor(name, config) {
   if (name.startsWith('entra')) return 'entra';
   if (name.startsWith('azure')) return config.cloud.provider;
   if (name.startsWith('okta')) return 'okta';
+  if (name.startsWith('aws')) return 'aws-govcloud';
   return 'csv';
 }
 

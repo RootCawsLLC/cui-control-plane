@@ -73,11 +73,25 @@ const QUESTIONS = [
     when: (a) => a['identity.provider'] === 'entra',
   },
   {
+    key: 'identity.org_url',
+    q: 'Okta org URL',
+    def: 'https://example.okta-gov.com',
+    why: 'Government Okta cells are okta-gov.com and okta.mil, not okta.com - the same trap as graph.microsoft.us.',
+    when: (a) => a['identity.provider'] === 'okta',
+  },
+  {
     key: 'cloud.provider',
     q: 'Cloud hosting the enclave',
     def: 'azure-gov',
     choices: ['azure-gov', 'azure', 'aws-govcloud', 'csv', 'none'],
     why: 'Decides which collector enumerates enclave assets - the denominator every other control depends on.',
+  },
+  {
+    key: 'cloud.region',
+    q: 'AWS region',
+    def: 'us-gov-west-1',
+    why: 'GovCloud is a separate partition. A commercial region does not error, it queries the wrong partition and returns a confidently empty result.',
+    when: (a) => a['cloud.provider'] === 'aws-govcloud',
   },
   {
     key: 'procurement.source',

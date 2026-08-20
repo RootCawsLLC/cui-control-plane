@@ -1,5 +1,7 @@
 import * as entra from './entra-identities.mjs';
 import * as azure from './azure-assets.mjs';
+import * as okta from './okta-identities.mjs';
+import * as aws from './aws-assets.mjs';
 import * as csv from './csv-sources.mjs';
 
 /**
@@ -34,12 +36,7 @@ export function selectCollectors(config) {
       chosen.push({ name: csv.identities.NAME, table: csv.identities.TABLE, controls: csv.identities.CONTROLS, collect: csv.identities.collect });
       break;
     case 'okta':
-      skipped.push({
-        name: 'okta-identities',
-        reason:
-          'Okta is a documented adapter that is not built yet. Set identity.provider: csv and export ' +
-          'a user list to run the MFA control today - see docs/SETUP.md, "Adding a collector".',
-      });
+      chosen.push(wrap(okta, 'okta-identities'));
       break;
     default:
       skipped.push({ name: 'identity', reason: 'identity.provider is none - the MFA control has no population' });
@@ -55,12 +52,7 @@ export function selectCollectors(config) {
       chosen.push({ name: csv.assets.NAME, table: csv.assets.TABLE, controls: csv.assets.CONTROLS, collect: csv.assets.collect });
       break;
     case 'aws-govcloud':
-      skipped.push({
-        name: 'aws-assets',
-        reason:
-          'AWS GovCloud is a documented adapter that is not built yet. Set cloud.provider: csv and export ' +
-          'an asset list to run the boundary inventory today.',
-      });
+      chosen.push(wrap(aws, 'aws-assets'));
       break;
     default:
       skipped.push({ name: 'cloud', reason: 'cloud.provider is none - the asset inventory has no cloud half' });
@@ -92,5 +84,7 @@ export function selectCollectors(config) {
 export const ALL = {
   entra,
   azure,
+  okta,
+  aws,
   ...csv,
 };

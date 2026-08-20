@@ -1,0 +1,24 @@
+{
+  "_comment": "NOT REAL EVIDENCE. Shapes match Okta /api/v1/users and /api/v1/users/{id}/factors. Exercises: a SUSPENDED user (not active), a break-glass profile attribute, and - the important one - a user whose only phishing-resistant factor is PENDING_ACTIVATION, which must NOT count as coverage.",
+  "users": [
+    { "id": "00u001", "status": "ACTIVE", "created": "2025-02-11T00:00:00Z", "lastUpdated": "2026-07-02T00:00:00Z", "profile": { "login": "alice@example.mil" } },
+    { "id": "00u002", "status": "ACTIVE", "created": "2025-02-11T00:00:00Z", "lastUpdated": "2026-07-02T00:00:00Z", "profile": { "login": "bob@example.mil" } },
+    { "id": "00u003", "status": "ACTIVE", "created": "2025-03-01T00:00:00Z", "lastUpdated": "2026-06-18T00:00:00Z", "profile": { "login": "carol@example.mil" } },
+    { "id": "00u004", "status": "ACTIVE", "created": "2025-04-19T00:00:00Z", "lastUpdated": "2026-08-01T00:00:00Z", "profile": { "login": "dan@example.mil" } },
+    { "id": "00u005", "status": "ACTIVE", "created": "2025-05-02T00:00:00Z", "lastUpdated": "2026-05-02T00:00:00Z", "profile": { "login": "frank@example.mil" } },
+    { "id": "00u006", "status": "SUSPENDED", "created": "2025-01-05T00:00:00Z", "lastUpdated": "2026-02-02T00:00:00Z", "profile": { "login": "judy@example.mil" } },
+    { "id": "00ubg1", "status": "ACTIVE", "created": "2025-01-01T00:00:00Z", "lastUpdated": "2025-01-01T00:00:00Z", "profile": { "login": "breakglass1@example.mil", "extensionAttribute1": "break-glass" } }
+  ],
+  "factorsByUser": {
+    "00u001": [{ "factorType": "webauthn", "status": "ACTIVE" }],
+    "00u002": [{ "factorType": "webauthn", "status": "ACTIVE" }],
+    "00u003": [{ "factorType": "u2f", "status": "ACTIVE" }],
+    "00u004": [],
+    "00u005": [
+      { "factorType": "sms", "status": "ACTIVE" },
+      { "factorType": "webauthn", "status": "PENDING_ACTIVATION" }
+    ],
+    "00u006": [],
+    "00ubg1": []
+  }
+}

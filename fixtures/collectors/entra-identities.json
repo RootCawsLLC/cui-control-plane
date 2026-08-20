@@ -1,0 +1,19 @@
+{
+  "_comment": "NOT REAL EVIDENCE. Shapes match Microsoft Graph /v1.0/users and /v1.0/reports/authenticationMethods/userRegistrationDetails. Exercises: a guest (excluded), a break-glass account (excluded), a user absent from the registration report (no factors), and a user with only non-phishing-resistant factors.",
+  "users": [
+    { "id": "u1001", "userPrincipalName": "alice@example.mil", "accountEnabled": true, "userType": "Member", "createdDateTime": "2025-02-11T00:00:00Z" },
+    { "id": "u1002", "userPrincipalName": "bob@example.mil", "accountEnabled": true, "userType": "Member", "createdDateTime": "2025-02-11T00:00:00Z" },
+    { "id": "u1003", "userPrincipalName": "carol@example.mil", "accountEnabled": true, "userType": "Member", "createdDateTime": "2025-03-01T00:00:00Z" },
+    { "id": "u1004", "userPrincipalName": "dan@example.mil", "accountEnabled": true, "userType": "Member", "createdDateTime": "2025-04-19T00:00:00Z" },
+    { "id": "u1005", "userPrincipalName": "frank@example.mil", "accountEnabled": true, "userType": "Member", "createdDateTime": "2025-05-02T00:00:00Z" },
+    { "id": "u1006", "userPrincipalName": "judy@example.mil", "accountEnabled": false, "userType": "Member", "createdDateTime": "2025-01-05T00:00:00Z" },
+    { "id": "g1001", "userPrincipalName": "guest@partner.example", "accountEnabled": true, "userType": "Guest", "createdDateTime": "2025-06-01T00:00:00Z" },
+    { "id": "ubg01", "userPrincipalName": "breakglass1@example.mil", "accountEnabled": true, "userType": "Member", "createdDateTime": "2025-01-01T00:00:00Z", "extensionAttribute1": "break-glass" }
+  ],
+  "registration": [
+    { "id": "u1001", "methodsRegistered": ["fido2SecurityKey"] },
+    { "id": "u1002", "methodsRegistered": ["windowsHelloForBusiness"] },
+    { "id": "u1003", "methodsRegistered": ["x509Certificate"] },
+    { "id": "u1005", "methodsRegistered": ["microsoftAuthenticatorPush", "sms"] }
+  ]
+}

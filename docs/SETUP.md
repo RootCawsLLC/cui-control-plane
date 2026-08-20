@@ -104,7 +104,7 @@ and affiliates are in scope too. Add yours.
 
 ## Step 4 — Wire your first real source
 
-Two paths. Do the first one today; the second one this week.
+Four paths. Do **A** today; do the one that matches your stack this week.
 
 ### Path A — CSV exports (works everywhere, no credentials)
 
@@ -158,6 +158,45 @@ must list those subscriptions in `cloud.subscriptions`. The tool deliberately do
 "whatever the credential can see" — a boundary defined that way expands silently every time somebody
 is granted access.
 
+### Path C — Okta
+
+Set `identity.provider: okta` and `identity.org_url`. **Government Okta cells are `okta-gov.com`
+and `okta.mil`**, not `okta.com` — the same trap as `graph.microsoft.us`.
+
+Create an API token (a **Read-Only Administrator** token is sufficient and is the least privilege
+that works) and set `CCP_OKTA_ORG_URL` and `CCP_OKTA_API_TOKEN`.
+
+Two things worth knowing before you run it. Okta has **no tenant-wide factor report**, so factors are
+one call per user — genuinely N calls, bounded to 8 concurrent and retried on 429. That is the honest
+cost of a complete population. And Okta names factors differently (`webauthn`, `u2f`,
+`signed_nonce` rather than `fido2SecurityKey`); the default accepted set follows the provider, so
+you only touch `identity.phishing_resistant_methods` if your policy differs.
+
+**Only ACTIVE factors count.** An Okta enrolment can sit in `PENDING_ACTIVATION` indefinitely, and
+counting it is how an MFA rollout reports full coverage while part of the population still signs in
+with a password.
+
+### Path D — AWS GovCloud
+
+Set `cloud.provider: aws-govcloud` and `cloud.region` (`us-gov-west-1` or `us-gov-east-1`).
+**The region is required and not defaulted**: GovCloud is a separate partition, and a commercial
+region does not error — it queries the wrong partition and returns a confidently empty result, which
+is exactly the shape of a silent false pass.
+
+Install the optional SDK and use your normal AWS credential chain (profile, environment, or role):
+
+```bash
+npm install @aws-sdk/client-config-service
+```
+
+It reads **AWS Config**, not the Tagging API — the Tagging API only returns taggable resources, and
+holes in the boundary inventory are holes in the denominator every other CUI-scoped control depends
+on. Config needs to be enabled, which it needs to be for CMMC regardless.
+
+For more than one account, set `cloud.aggregator` to a Config aggregator name. Without one, a single
+query only ever sees the credential's own account — and if `cloud.accounts` declares more than it
+found, the collector says so rather than letting a partial answer read as a whole one.
+
 ## Step 5 — Run it for real, on a schedule
 
 ```bash
@@ -183,6 +222,7 @@ Ordered by how soon it will bite you.
 |---|---|---|
 | CUI boundary | `ccp.config.yaml` → `boundary` | Decision, not a setting |
 | Sources | `ccp.config.yaml` → `identity`, `cloud`, `procurement`, `inventory`, `incident_response` | Start CSV, upgrade to API |
+| Government endpoints | `identity.cloud_environment`, `identity.org_url`, `cloud.region` | GCC High, okta-gov.com and GovCloud all use different hosts or partitions |
 | 1260H list | `inbox/entity-list-1260h.csv` | Refresh on a schedule |
 | §889 manufacturers | `reference/covered-telecom.seed.csv` | Statutory five plus your affiliates |
 | Phishing-resistant methods | `identity.phishing_resistant_methods` | Policy decision. Default excludes SMS and push |

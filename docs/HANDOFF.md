@@ -42,6 +42,16 @@ models as the specification of each population, which is their job today — the
 **`scripts/import-scf.mjs` has never resolved against a real SCF release**, because none is present
 and none will be committed. It is written to fail loudly with instructions rather than to no-op.
 
+**No collector has been run against a live tenant or account.** Grading is pure and unit-tested from
+recorded API shapes, and the fixtures exercise the traps each provider has - Okta's Link-header
+paging and PENDING_ACTIVATION factors, all three of AWS Config's tag shapes, Entra users absent from
+the registration report. But recorded shapes are not the same as a real response, and the first live
+run of any collector should be treated as a test of the collector, not of the organisation.
+
+The AWS one specifically could have been smoke-tested against the lab account and was not: the
+`grc-smoke` SSO token had expired and refreshing it needs a browser. `aws sso login --profile
+grc-smoke` then `npm run pipeline` is the check that is owed.
+
 **Every `cost` block is empty**, and `intended_efficacy` / `coverage` with it — see watch item 10.
 Cost moves by an order of magnitude on the Phase 0 boundary decision, and the two efficacy
 parameters are calibrated estimates rather than things a generator should invent. VF and VD are no

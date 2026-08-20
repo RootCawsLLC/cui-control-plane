@@ -20,8 +20,10 @@ import { repoPath, DEFAULT_PHISHING_RESISTANT } from '../config.mjs';
  */
 
 export const VERSION = '1.0.0';
-export const SOURCE = 'enclave_idp';
-export const TABLE = 'users_snapshot';
+// The full landing table name, matching every other collector. Exporting the bare suffix here
+// meant the registry recorded a table that is not a key in TABLES, and the withholding logic
+// quietly could not find it.
+export const TABLE = 'src_enclave_idp_users_snapshot';
 export const CONTROLS = ['ctl.iam.cui-enclave.mfa'];
 export const FIXTURE = 'entra-identities';
 
@@ -75,17 +77,20 @@ export function grade({ users, registration, config, collectedAt }) {
  * threat model care about. Anything the organisation has declared phishing-resistant maps to
  * webauthn unless it is certificate-based, which is how a PIV/CAC deployment appears.
  */
+export const RESERVED_TOKENS = new Set(['webauthn', 'piv_cac']);
+
 export function normaliseMethod(method, phishingResistant) {
-  if (method === 'x509Certificate') return 'piv_cac';
-  if (phishingResistant.has(method)) return 'webauthn';
-  return method;
+  if (phishingResistant.has(method)) return method === 'x509Certificate' ? 'piv_cac' : 'webauthn';
+  // Suffixed so an unaccepted method can never collide with the model's passing vocabulary. Entra's
+  // names do not collide today; relying on that is relying on Microsoft never shipping one that does.
+  return RESERVED_TOKENS.has(method) ? `${method}:not-accepted` : method;
 }
 
 export async function collect({ config, collectedAt, fixture = false }) {
   if (fixture) {
     const data = JSON.parse(readFileSync(repoPath('fixtures', 'collectors', `${FIXTURE}.json`), 'utf8'));
     return {
-      table: `src_${SOURCE}_${TABLE}`,
+      table: TABLE,
       rows: grade({ ...data, config, collectedAt }),
       population: {
         expected: data.users.length,
@@ -119,7 +124,7 @@ export async function collect({ config, collectedAt, fixture = false }) {
   const rows = grade({ users: users.items, registration: registration.items, config, collectedAt });
 
   return {
-    table: `src_${SOURCE}_${TABLE}`,
+    table: TABLE,
     rows,
     population: {
       expected: users.items.length,

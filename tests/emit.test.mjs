@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { loadAssertions, loadControls } from '../src/lib/load.mjs';
+import { loadAssertions, latestPerControl, loadControls } from '../src/lib/load.mjs';
 import { score, UnverifiedWeights } from '../src/sprs.mjs';
 import { serialize } from '../src/oscal/common.mjs';
 import { catalog, profiles } from '../src/oscal/catalog.mjs';
@@ -11,11 +11,15 @@ import { poam, segmentDurations } from '../src/oscal/poam.mjs';
 import { ssp } from '../src/oscal/ssp.mjs';
 import { assessmentPlan } from '../src/oscal/assessment-plan.mjs';
 
-const assertions = loadAssertions('fixtures/assertions');
+const history = loadAssertions('fixtures/assertions');
+// The OSCAL package is point-in-time. The history exists for src/variance.mjs; feeding it here
+// would emit one finding per snapshot and duplicate POA&M items onto colliding UUIDs.
+const assertions = latestPerControl(history);
 
 test('fixtures load and every one is marked as a fixture', () => {
-  assert.equal(assertions.length, 6);
-  for (const a of assertions) {
+  assert.equal(assertions.length, 6, 'one per control after latestPerControl');
+  assert.ok(history.length > assertions.length, 'the fixture set is a time series, not one snapshot');
+  for (const a of history) {
     assert.equal(a.fixture, true, `${a.control_id} must be stamped as a fixture`);
     assert.equal(a.passing_count + a.failing_count, a.total, `${a.control_id} counts must reconcile`);
     assert.equal(a.failing.length, a.failing_count, `${a.control_id} failing[] must be fully enumerated`);
@@ -198,6 +202,17 @@ test('an equals_detected basis is disclosed in the finding', () => {
 // ---------------------------------------------------------------------------------------------
 // POA&M
 // ---------------------------------------------------------------------------------------------
+test('the point-in-time package never emits duplicate UUIDs', () => {
+  // With three snapshots for a control, feeding the history straight in would produce POA&M items
+  // that collide on uuid5(control_id|subject_id) - the same weakness listed three times.
+  const items = poam(assertions).doc['plan-of-action-and-milestones']['poam-items'];
+  assert.equal(new Set(items.map((i) => i.uuid)).size, items.length);
+
+  const findings = assessmentResults(assertions)['assessment-results'].results[0].findings;
+  assert.equal(new Set(findings.map((f) => f.target['target-id'])).size, findings.length,
+    'one finding per control, not one per snapshot');
+});
+
 test('the POA&M has one item per failing subject and carries the variance timestamps', () => {
   const { doc, warnings } = poam(assertions);
   const items = doc['plan-of-action-and-milestones']['poam-items'];

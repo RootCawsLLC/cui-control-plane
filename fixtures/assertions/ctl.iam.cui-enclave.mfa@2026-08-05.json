@@ -1,0 +1,64 @@
+{
+  "control_id": "ctl.iam.cui-enclave.mfa",
+  "as_of": "2026-08-05T00:00:00Z",
+  "population_definition": "All human identities in the CUI enclave identity provider with status active, excluding service principals and excluding break-glass accounts.",
+  "source_system": "enclave IdP (Okta or Entra ID, enclave tenant)",
+  "query_ref": "models/controls/ctl_iam_cui_enclave_mfa.sql",
+  "total": 127,
+  "passing_count": 123,
+  "failing_count": 4,
+  "failing": [
+    {
+      "subject_id": "u_7702",
+      "reason": "no_factor_enrolled",
+      "first_observed": "2026-07-20T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-07-19T11:30:00Z",
+        "variance_detected_at": "2026-07-20T00:00:00Z",
+        "remediation_started_at": "2026-07-28T09:00:00Z",
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    },
+    {
+      "subject_id": "u_8831",
+      "reason": "no_factor_enrolled",
+      "first_observed": "2026-08-02T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-08-01T09:12:00Z",
+        "variance_detected_at": "2026-08-02T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    },
+    {
+      "subject_id": "u_9014",
+      "reason": "no_phishing_resistant_factor",
+      "first_observed": "2026-06-30T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-06-29T15:05:00Z",
+        "variance_detected_at": "2026-06-30T00:00:00Z",
+        "remediation_started_at": "2026-07-14T10:00:00Z",
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    },
+    {
+      "subject_id": "u_9077",
+      "reason": "no_phishing_resistant_factor",
+      "first_observed": "2026-06-30T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-06-29T15:05:00Z",
+        "variance_detected_at": "2026-06-30T00:00:00Z",
+        "remediation_started_at": "2026-07-14T10:00:00Z",
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    }
+  ],
+  "passing": null,
+  "coverage_basis": "127 of 130 active human enclave identities in scope; 3 break-glass accounts excluded under EX-0041, expiring 2026-12-31.",
+  "confidence_tier": 4,
+  "fixture": true
+}

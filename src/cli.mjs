@@ -3,10 +3,11 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { ROOT, loadAssertions, isFixtureSet, FIXTURE_STAMP } from './lib/load.mjs';
+import { ROOT, loadAssertions, latestPerControl, isFixtureSet, FIXTURE_STAMP } from './lib/load.mjs';
 import { validate } from './validate.mjs';
 import { coverage, formatCoverage } from './coverage.mjs';
 import { score, formatScore, UnverifiedWeights } from './sprs.mjs';
+import { variance, formatVariance } from './variance.mjs';
 import { serialize } from './oscal/common.mjs';
 import { catalog, profiles } from './oscal/catalog.mjs';
 import { componentDefinition } from './oscal/component-definition.mjs';
@@ -20,6 +21,7 @@ const USAGE = `ccp - CUI control plane
   ccp validate                    schema + house rules over controls/ and models/
   ccp coverage                    which of the 110 requirements have a control
   ccp sprs      [--assertions D] [--weights F]   derive the SPRS score
+  ccp variance  [--assertions D]                 VF/VD per control, from assertion history
   ccp emit all  [--assertions D] [--out D]       OSCAL O1-O5
 
 House rules enforced by validate: assertions quantify over a population; query_ref exists and
@@ -60,6 +62,12 @@ function main(argv) {
     return 0;
   }
 
+  if (command === 'variance') {
+    const assertions = loadAssertions(arg(argv, 'assertions', 'fixtures/assertions'));
+    console.log(formatVariance(variance(assertions)));
+    return 0;
+  }
+
   if (command === 'sprs') {
     const assertions = loadAssertions(arg(argv, 'assertions', 'fixtures/assertions'));
     const weightsPath = arg(argv, 'weights', 'reference/sprs-weights.yaml');
@@ -81,7 +89,10 @@ function main(argv) {
         'because a package with some models regenerated and others stale is worse than no package.');
       return 1;
     }
-    const assertions = loadAssertions(arg(argv, 'assertions', 'fixtures/assertions'));
+    // Point-in-time package: the newest assertion per control. The full history drives
+    // `ccp variance` instead - see latestPerControl().
+    const history = loadAssertions(arg(argv, 'assertions', 'fixtures/assertions'));
+    const assertions = latestPerControl(history);
     const outDir = resolve(ROOT, arg(argv, 'out', 'out'));
     mkdirSync(outDir, { recursive: true });
 

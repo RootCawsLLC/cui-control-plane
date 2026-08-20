@@ -66,4 +66,24 @@ export const readRepoFile = (p) => read(p);
  */
 export const isFixtureSet = (assertions) => assertions.some((a) => a.fixture === true);
 
+/**
+ * The most recent assertion per control.
+ *
+ * The OSCAL package is a point-in-time assessment: O3, O4 and O5 describe the state as of one
+ * moment. Feeding them the full history would emit one finding per control PER SNAPSHOT and, worse,
+ * duplicate POA&M items that collide on the same deterministic UUID - the same weakness listed
+ * three times, or listed once with the count silently wrong.
+ *
+ * The history is not discarded, it belongs to a different consumer: src/variance.mjs walks every
+ * snapshot to derive VF and VD. Point-in-time for the assessor, time series for the risk layer.
+ */
+export function latestPerControl(assertions) {
+  const latest = new Map();
+  for (const a of assertions) {
+    const prev = latest.get(a.control_id);
+    if (!prev || a.as_of > prev.as_of) latest.set(a.control_id, a);
+  }
+  return [...latest.values()].sort((a, b) => a.control_id.localeCompare(b.control_id));
+}
+
 export const FIXTURE_STAMP = 'NOT REAL EVIDENCE';

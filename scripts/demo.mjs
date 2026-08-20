@@ -37,7 +37,13 @@ step(
   ['sprs', '--weights', 'fixtures/sprs-weights.fixture.yaml']
 );
 
-step('5. Emit OSCAL O1-O5 from the fixture assertions', ['emit', 'all', '--out', 'out']);
+step(
+  '5. Variance Frequency and Variance Duration from the assertion history - the half that makes ' +
+    'this a risk instrument rather than a compliance pipeline',
+  ['variance']
+);
+
+step('6. Emit OSCAL O1-O5 from the fixture assertions', ['emit', 'all', '--out', 'out']);
 
 console.log(
   '\nEverything in out/ is stamped NOT REAL EVIDENCE and re-exports byte-identically.\n' +

@@ -28,6 +28,9 @@ jobs:
       - name: Coverage report
         run: npm run coverage
 
+      - name: Variance report
+        run: npm run variance
+
       # The refusal is a feature and is asserted here rather than trusted. If this step ever
       # succeeds, somebody populated the SPRS weights without verifying them, or removed the guard.
       - name: SPRS refuses to score against unpopulated weights

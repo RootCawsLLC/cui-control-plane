@@ -23,7 +23,8 @@
     "coverage": "node src/cli.mjs coverage",
     "sprs": "node src/cli.mjs sprs --assertions fixtures/assertions --weights fixtures/sprs-weights.fixture.yaml",
     "emit": "node src/cli.mjs emit all --assertions fixtures/assertions --out out",
-    "demo": "node scripts/demo.mjs"
+    "demo": "node scripts/demo.mjs",
+    "variance": "node src/cli.mjs variance"
   },
   "dependencies": {
     "ajv": "^8.17.1",

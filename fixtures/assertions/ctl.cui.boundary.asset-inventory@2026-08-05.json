@@ -1,0 +1,52 @@
+{
+  "control_id": "ctl.cui.boundary.asset-inventory",
+  "as_of": "2026-08-05T00:00:00Z",
+  "population_definition": "All assets attached to the CUI enclave - hosts, storage buckets, databases, SaaS tenants and managed endpoints - reconciled against the authoritative network ranges and the enclave cloud account list.",
+  "source_system": "enclave CMDB reconciled against AWS GovCloud Config and enclave MDM",
+  "query_ref": "models/controls/ctl_cui_boundary_asset_inventory.sql",
+  "total": 406,
+  "passing_count": 403,
+  "failing_count": 3,
+  "failing": [
+    {
+      "subject_id": "s3://enclave-artifacts-7731",
+      "reason": "no_classification_recorded",
+      "first_observed": "2026-07-29T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-07-29T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    },
+    {
+      "subject_id": "s3://enclave-scratch-0042",
+      "reason": "no_classification_recorded",
+      "first_observed": "2026-07-29T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-07-29T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    },
+    {
+      "subject_id": "db-enclave-reporting-02",
+      "reason": "no_owner_recorded",
+      "first_observed": "2026-08-05T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-08-04T11:02:00Z",
+        "variance_detected_at": "2026-08-05T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    }
+  ],
+  "passing": null,
+  "coverage_basis": "406 of 406 enclave assets in scope; no documented exceptions. First snapshot in this series, so no prior denominator to compare against.",
+  "confidence_tier": 4,
+  "fixture": true
+}

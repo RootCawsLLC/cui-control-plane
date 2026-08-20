@@ -35,7 +35,11 @@
       "minLength": 1
     },
     "owner": { "type": "string", "minLength": 1 },
-    "status": { "type": "string", "enum": ["operating", "building", "planned", "retired"] },
+    "status": {
+      "description": "The control's lifecycle IN THE ENVIRONMENT - never this repository's build progress. `operating` means instrumented against real telemetry and observed holding; it is the gate on policy generation and on counting toward operating coverage, so it is not a field to advance optimistically. `building` is the control being stood up now. `planned` means sequenced for later: a planned control may already have a full record, a query and a crosswalk here, because writing those is how a control gets planned. A control whose artifacts exist but whose turn has not come is `planned`, not `building`.",
+      "type": "string",
+      "enum": ["operating", "building", "planned", "retired"]
+    },
     "supersedes": { "type": ["string", "null"] },
     "split_rationale": {
       "description": "Required when another control in the inventory shares this control's domain and final segment - that is, when this record exists because of a layer split. States which of owner / cost / threat model / failure mode differs. The validator enforces its presence, because an unjustified split inflates the inventory just as surely as a munged control destroys it.",

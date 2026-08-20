@@ -69,6 +69,17 @@ discipline.
 | `ctl.scrm.procurement.telecom-equipment-attestation` | planned | §889 over the component inventory |
 | `ctl.ir.dibnet.incident-reporting` | planned | The 72-hour DFARS 7012 process control |
 
+**`status` is the control's lifecycle in the environment, not this repository's build progress.**
+All six have a record, a population definition, a dbt model and a crosswalk — that is how a control
+gets planned. None is `operating`, because nothing is yet instrumented against real telemetry and
+observed holding: there is no warehouse, no enclave IdP and no supplier master here. `planned`
+means sequenced for later, and the two marked `building` are the Phase 2 order — the denominator
+first, then the highest-weight control with the cleanest telemetry.
+
+That field is load-bearing rather than decorative. It is why `ccp coverage` reports **0 operating**,
+and why `ccp policy` generates nothing: policy comes last, generated from a control observed
+holding. Advancing it optimistically would make both of those lie.
+
 **The MFA split is the worked example of the hardest discipline in the practice.** An assessor
 scores the CUI boundary specifically. One "MFA" record spanning the enclave and corporate IT is the
 munged control that makes an SSP indefensible under review — and it would import corporate-IT

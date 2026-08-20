@@ -82,7 +82,15 @@ export function ssp(assertions) {
         },
       },
       'system-implementation': {
-        users: [],
+        // The schema requires at least one user, and an empty array was the lazy answer. These are
+        // derived from the control records' owners rather than authored, like everything else in
+        // this document - so the user list cannot drift from who actually owns the controls.
+        users: [...new Set(controls.map((c) => c.owner))].sort().map((role) => ({
+          uuid: ids.party(`user|${role}`),
+          title: role,
+          description: `Owns ${controls.filter((c) => c.owner === role).length} control(s) in this inventory.`,
+          'role-ids': [role],
+        })),
         components: [...new Set(controls.map((c) => c.source_system))].sort().map((s) => ({
           uuid: ids.component(s),
           type: 'service',

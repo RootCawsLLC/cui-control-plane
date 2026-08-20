@@ -52,6 +52,19 @@ export function assessmentPlan() {
           description: `Evidence source read by the control models: ${s}.`,
           status: { state: 'operational' },
         })),
+        // Required by the schema, and the requirement is a fair one: it asks what actually performs
+        // the assessment. Here that is the pipeline itself, which is the honest answer and also the
+        // argument - the assessment tool is a set of queries over full populations, not a person
+        // with a checklist.
+        'assessment-platforms': [
+          {
+            uuid: ids.document('assessment-platform'),
+            title: 'cui-control-plane evidence pipeline',
+            'uses-components': [...new Set(controls.map((c) => c.source_system))]
+              .sort()
+              .map((s) => ({ 'component-uuid': ids.component(s) })),
+          },
+        ],
       },
       tasks: controls
         .filter((c) => c.cadence)

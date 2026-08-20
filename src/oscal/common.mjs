@@ -79,7 +79,14 @@ export function metadata({ title, assertions = [], isFixture = false }) {
 }
 
 /** FAIR-CAM measurement carried on OSCAL props. Spec-legal, and ignorable by tools that do not know the namespace. */
-export function faircamProps(control, asOf) {
+/**
+ * @param {object} control  The control record.
+ * @param {string} [asOf]   Evidence timestamp to stamp on the measurement.
+ * @param {object} [measured] A row from src/variance.mjs for this control, when history exists.
+ *   This is what the props extension is FOR: OSCAL has nowhere to carry control measurement, so
+ *   VF and VD ride here and the package carries the risk layer instead of only the compliance one.
+ */
+export function faircamProps(control, asOf, measured = null) {
   const props = [];
   for (const f of control.faircam ?? []) {
     props.push({ ns: FAIRCAM_NS, name: 'function', value: f.function, class: f.primary ? 'primary' : 'secondary' });
@@ -97,6 +104,31 @@ export function faircamProps(control, asOf) {
     if (value === null || value === undefined) continue;
     props.push({ ns: FAIRCAM_NS, name, value: String(value) });
   }
+
+  if (measured) {
+    // Every qualification that `ccp variance` prints travels with the number here too. A consumer
+    // reading variance-frequency out of this package must be able to see that it was annualised
+    // from a fortnight, or that the mean excludes four censored episodes - otherwise the props
+    // extension launders a heavily qualified figure into a bare one.
+    const emit = (name, value) => {
+      if (value === null || value === undefined) return;
+      props.push({ ns: FAIRCAM_NS, name, value: String(value) });
+    };
+    emit('variance-frequency', measured.variance_frequency_per_year);
+    emit('variance-duration', measured.variance_duration_days);
+    emit('variance-episodes', measured.episodes);
+    emit('variance-episodes-censored', measured.censored);
+    emit('observation-window-days', measured.window_days);
+    if (measured.extrapolated) emit('variance-frequency-basis', 'extrapolated-from-short-window');
+    if (measured.saturated) emit('remediation-queue', 'saturated');
+    if (measured.understated_episodes > 0) {
+      emit('variance-duration-basis', 'understated-some-episodes-lack-onset');
+    }
+    if (measured.censored > 0 && measured.variance_duration_days !== null) {
+      emit('variance-duration-bound', 'lower');
+    }
+  }
+
   if (asOf) props.push({ ns: FAIRCAM_NS, name: 'as-of', value: asOf });
   return props;
 }

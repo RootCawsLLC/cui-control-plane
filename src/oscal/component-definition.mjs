@@ -13,8 +13,9 @@ import { loadControls } from '../lib/load.mjs';
  * the shape that makes the SSP generated from this readable as a description of a system rather
  * than as a list of requirements.
  */
-export function componentDefinition() {
+export function componentDefinition({ measured = [] } = {}) {
   const controls = loadControls();
+  const byControl = new Map(measured.map((m) => [m.control_id, m]));
 
   const bySource = new Map();
   for (const c of controls) {
@@ -40,7 +41,7 @@ export function componentDefinition() {
             'control-id': c.control_id,
             description: c.assertion,
             props: [
-              ...faircamProps(c),
+              ...faircamProps(c, null, byControl.get(c.control_id)),
               { ns: PROPS_NS, name: 'population-definition', value: c.population_definition },
               { ns: PROPS_NS, name: 'query-ref', value: c.query_ref },
               { ns: PROPS_NS, name: 'status', value: c.status },

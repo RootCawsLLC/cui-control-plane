@@ -10,6 +10,7 @@ import { assessmentResults } from '../src/oscal/assessment-results.mjs';
 import { poam, segmentDurations } from '../src/oscal/poam.mjs';
 import { ssp } from '../src/oscal/ssp.mjs';
 import { assessmentPlan } from '../src/oscal/assessment-plan.mjs';
+import { variance } from '../src/variance.mjs';
 
 const history = loadAssertions('fixtures/assertions');
 // The OSCAL package is point-in-time. The history exists for src/variance.mjs; feeding it here
@@ -111,6 +112,51 @@ test('crosswalk links are URNs, not dangling fragments', () => {
     assert.match(l.href, /^urn:rootcaws:cui-control-plane:/);
     assert.ok(!l.href.startsWith('#'), 'a crosswalk target is an external identifier, not a document here');
   }
+});
+
+// ---------------------------------------------------------------------------------------------
+// The FAIR-CAM props extension exists so an OSCAL package carries the risk layer, not only the
+// compliance one. A measurement travelling without its qualifications would be worse than no
+// measurement: it launders a heavily-caveated figure into a bare number.
+// ---------------------------------------------------------------------------------------------
+const FAIRCAM = 'https://github.com/RootCawsLLC/cui-control-plane/ns/faircam';
+
+function measuredProps(controlId) {
+  const measured = variance(history).rows;
+  const obs = assessmentResults(assertions, { measured })['assessment-results'].results[0].observations;
+  const o = obs.find((x) => x.title === controlId);
+  return Object.fromEntries(o.props.filter((x) => x.ns === FAIRCAM).map((x) => [x.name, x.value]));
+}
+
+test('VF and VD reach the OSCAL props once history exists', () => {
+  const p = measuredProps('ctl.iam.cui-enclave.mfa');
+  assert.equal(p['variance-frequency'], '130.45');
+  assert.equal(p['variance-duration'], '23');
+  assert.equal(p['variance-episodes'], '5');
+  assert.equal(p['variance-episodes-censored'], '4');
+});
+
+test('a measurement never travels without the qualification that applies to it', () => {
+  const p = measuredProps('ctl.iam.cui-enclave.mfa');
+  // Annualised from 14 days, mean excludes 4 censored episodes, queue saturated. All three must be
+  // visible to anyone reading the number out of the package.
+  assert.equal(p['variance-frequency-basis'], 'extrapolated-from-short-window');
+  assert.equal(p['variance-duration-bound'], 'lower');
+  assert.equal(p['remediation-queue'], 'saturated');
+  assert.equal(p['observation-window-days'], '14');
+});
+
+test('a duration with no closed episode is omitted, never emitted as zero', () => {
+  const p = measuredProps('ctl.cui.boundary.asset-inventory');
+  assert.ok('variance-frequency' in p, 'frequency is computable');
+  assert.equal(p['variance-duration'], undefined, 'zero would claim instant remediation');
+  assert.equal(p['variance-duration-basis'], 'understated-some-episodes-lack-onset');
+});
+
+test('a single-snapshot control gets no frequency in the props either', () => {
+  const p = measuredProps('ctl.ir.dibnet.incident-reporting');
+  assert.equal(p['variance-frequency'], undefined);
+  assert.equal(p['observation-window-days'], '0');
 });
 
 test('every UUID in the emitted set is v5', () => {

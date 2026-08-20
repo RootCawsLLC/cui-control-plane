@@ -137,9 +137,13 @@ function main(argv) {
 
     write('oscal-catalog.json', catalog());
     for (const p of profiles()) write(`oscal-profile-${p.key}.json`, p.doc);
-    write('oscal-component-definition.json', componentDefinition());
+    // VF/VD come from the full history even though the package itself is point-in-time - that is
+    // the whole purpose of the props extension: the OSCAL package carries the risk layer.
+    const measured = variance(history).rows;
+
+    write('oscal-component-definition.json', componentDefinition({ measured }));
     write('oscal-assessment-plan.json', assessmentPlan());
-    write('oscal-assessment-results.json', assessmentResults(assertions));
+    write('oscal-assessment-results.json', assessmentResults(assertions, { measured }));
 
     const p = poam(assertions);
     for (const w of p.warnings) console.warn(`warn  ${w}`);

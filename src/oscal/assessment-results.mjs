@@ -15,8 +15,9 @@ import { loadControls, isFixtureSet, FIXTURE_STAMP } from '../lib/load.mjs';
  * and the population numbers ride along in props so the reader can see the difference between
  * "one exception" and "nothing works" that the enum cannot express.
  */
-export function assessmentResults(assertions) {
+export function assessmentResults(assertions, { measured = [] } = {}) {
   const controls = new Map(loadControls().map((c) => [c.control_id, c]));
+  const byControl = new Map(measured.map((m) => [m.control_id, m]));
   const isFixture = isFixtureSet(assertions);
 
   const observations = assertions.map((a) => ({
@@ -34,7 +35,7 @@ export function assessmentResults(assertions) {
       { ns: PROPS_NS, name: 'query-ref', value: a.query_ref },
       { ns: PROPS_NS, name: 'confidence-tier', value: String(a.confidence_tier) },
       ...(a.fixture ? [{ ns: PROPS_NS, name: 'fixture', value: 'true' }] : []),
-      ...faircamProps(controls.get(a.control_id) ?? { faircam: [] }, a.as_of),
+      ...faircamProps(controls.get(a.control_id) ?? { faircam: [] }, a.as_of, byControl.get(a.control_id)),
     ],
     remarks:
       `Population: ${a.total} examined from ${a.source_system} via ${a.query_ref}. ` +

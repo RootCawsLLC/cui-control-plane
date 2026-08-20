@@ -16,9 +16,19 @@ The spine runs end to end against synthetic evidence: `npm run demo` walks it.
 - **OSCAL O1–O5** — eight artifacts, all byte-stable across re-export, all v5 UUIDs, and all
   validating clean against NIST’s `oscal-cli` as a blocking CI gate. The assessment plan was
   added because the validator proved `import-ap` is followed rather than merely recorded.
+- **Scenario registry** — 6 scenarios, structure only. The validator refuses a control pointing at
+  a scenario that does not exist, so the join to risk cannot dangle.
+- **Exception register** — expiry mandatory, subjects enumerated, an expired exception fails the
+  build because it has silently become an undocumented control change.
+- **`ccp variance`** — VF and VD per control from assertion history, with censoring, queue regime
+  and short-window extrapolation all handled explicitly. The measurements flow into the OSCAL
+  FAIR-CAM props, each carrying its own qualification, so the package holds the risk layer.
+- **`ccp policy`** — generates nothing today and says why, naming every control it skipped.
+- **`ccp representation 889`** — refuses while three components are unresolved.
 - **SPRS derivation** — and its refusal path.
-- **53 tests passing**, including the guard suite that proves each house rule actually fires and
-  the reference tests that pin the cross-document UUID shapes the validator rejected.
+- **86 tests passing**, including the guard suite that proves each house rule actually fires, the
+  reference tests pinning the cross-document UUID shapes NIST's validator rejected, and the
+  variance tests covering censoring, saturation and small-sample extrapolation.
 
 ## What is stubbed, and what "stubbed" means here
 
@@ -32,16 +42,21 @@ models as the specification of each population, which is their job today — the
 **`scripts/import-scf.mjs` has never resolved against a real SCF release**, because none is present
 and none will be committed. It is written to fail loudly with instructions rather than to no-op.
 
-**Every `measurement` and `cost` block is empty.** Not an oversight — see watch items 10.
-Measurement needs snapshot history that does not exist yet, and cost moves by an order of magnitude
-on the Phase 0 boundary decision.
+**Every `cost` block is empty**, and `intended_efficacy` / `coverage` with it — see watch item 10.
+Cost moves by an order of magnitude on the Phase 0 boundary decision, and the two efficacy
+parameters are calibrated estimates rather than things a generator should invent. VF and VD are no
+longer in this category: `ccp variance` computes them from the fixture history and they reach the
+OSCAL props.
 
 ## Next, in order
 
+Everything buildable without a warehouse, a primary source, or a scoping decision is now built.
+What remains needs one of those three, which is why the list is short and why none of it is code.
+
 1. **Make the Phase 0 boundary decision.** Everything downstream is shaped by enclave vs.
-   enterprise, and two controls are explicitly unpriced pending it.
-2. **Stand up the landing layer time-indexed.** If it overwrites, `variance_events.sql` is empty
-   forever and the risk half of the argument disappears — this is the load-bearing infrastructure
+   enterprise, and two controls are explicitly unpriced pending it. **Blocking, and yours.**
+2. **Stand up the landing layer time-indexed.** If it overwrites, `ccp variance` has nothing to
+   walk and the risk half of the argument disappears — this is the load-bearing infrastructure
    decision, not the warehouse brand.
 3. **Run `ctl.cui.boundary.asset-inventory` for real.** It is the denominator; nothing downstream
    means anything until its population is trustworthy. Expect the denominator itself to move for a
@@ -50,6 +65,18 @@ on the Phase 0 boundary decision.
 5. **Settle watch items 1 and 2** — the SPRS weight table and the non-POA&M-able subset. Both are
    primary-source reads, neither is large, and both currently block a real assessment package.
 6. **Populate the inventory toward the 110.** `npm run coverage` prints the backlog, enumerated.
+   This is the largest remaining piece of authoring and it is control-design work, not typing:
+   each new control needs a real population, a query, an owner and a scenario before it earns a
+   place.
+
+Two smaller things that are code and were deliberately left:
+
+- **A reference-edition freshness command.** The 1260H control already fails a supplier screened
+  against a superseded edition, but nothing yet reports how stale the pinned reference tables
+  themselves are. That is the Phase 4 "scheduled extract-and-diff" loop.
+- **`intended_efficacy` / `coverage` on control records.** VF and VD are now computed; those two
+  are still null, and operational efficacy needs all four. They are estimates rather than
+  measurements, so they want a calibrated human, not a generator.
 
 ## Open questions nobody has answered yet
 

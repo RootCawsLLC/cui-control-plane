@@ -144,15 +144,21 @@ export async function runPipeline({
   // A population that fails ENTIRELY, for a single reason, is far more often a missing source or a
   // misconfigured key than an estate that is uniformly broken. Saying so costs one line and stops an
   // analyst opening a ticket per resource on their first day.
+  //
+  // Returned as well as logged. A caveat that exists only on stdout is invisible to CI, to a
+  // scheduled run and to anything consuming this function - which is how a control reported 82 of
+  // 82 failing for one reason for as long as it did.
+  const notes = [];
   for (const a of assertions) {
     if (a.total < 5 || a.failing_count !== a.total) continue;
     const reasons = new Set(a.failing.map((f) => f.reason));
     if (reasons.size !== 1) continue;
-    log(
-      `  NOTE: ${a.control_id} - all ${a.total} members fail for one reason (${[...reasons][0]}). ` +
+    notes.push(
+      `${a.control_id} - all ${a.total} members fail for one reason (${[...reasons][0]}). ` +
         'That is usually a missing source or a misconfigured key rather than uniform non-compliance.'
     );
   }
+  for (const n of notes) log(`  NOTE: ${n}`);
 
   // --- write ----------------------------------------------------------------------------------
   mkdirSync(evidenceDir, { recursive: true });
@@ -163,7 +169,7 @@ export async function runPipeline({
     );
   }
 
-  return { assertions, withheld, collected, skipped, built, evidenceDir, asOf };
+  return { assertions, withheld, collected, skipped, built, notes, evidenceDir, asOf };
 }
 
 /**
@@ -190,8 +196,12 @@ export function buildAssertion({ control, rows, asOf, fixture, prior = {}, colle
     };
   });
 
-  const source = collected.find((c) => (c.controls ?? []).includes(control.control_id));
-  const complete = source?.population?.complete !== false;
+  // EVERY source, not the first one found. The asset inventory reconciles a CMDB, a cloud API and
+  // an MDM; picking one of the three meant the confidence tier and the coverage basis described
+  // whichever collector happened to sort first, so a hand-exported CSV sitting beside a live API
+  // could be reported at the API's tier.
+  const sources = collected.filter((c) => (c.controls ?? []).includes(control.control_id));
+  const complete = sources.length > 0 && sources.every((c) => c.population?.complete !== false);
 
   return {
     control_id: control.control_id,
@@ -204,18 +214,36 @@ export function buildAssertion({ control, rows, asOf, fixture, prior = {}, colle
     failing_count: failing.length,
     failing,
     passing: null,
-    coverage_basis: coverageBasis({ rows, failing, source, complete, fixture }),
-    // Tier 4 is internal empirical from a system of record. A CSV an analyst exported by hand is
-    // real evidence but it is a point-in-time manual extract, so it does not claim tier 4.
-    confidence_tier: fixture ? 2 : source?.population?.source_of_truth?.startsWith('/') || source?.name?.startsWith('csv') ? 3 : 4,
+    coverage_basis: coverageBasis({ rows, failing, sources, complete, fixture }),
+    confidence_tier: confidenceTier({ sources, fixture }),
     ...(fixture ? { fixture: true } : {}),
   };
 }
 
-function coverageBasis({ rows, failing, source, complete, fixture }) {
+/**
+ * Tier 4 is internal empirical from a system of record. A CSV an analyst exported by hand is real
+ * evidence but a point-in-time manual extract, so it does not claim tier 4.
+ *
+ * Across several sources the answer is the WEAKEST, not the best available. A reconciliation is
+ * only as good as its shakiest input: an asset inventory built from a live cloud API and a
+ * spreadsheet is a spreadsheet-grade claim, and reporting it at the API's tier overstates it.
+ */
+export function confidenceTier({ sources, fixture }) {
+  if (fixture) return 2;
+  if (sources.length === 0) return 3;
+  const tierOf = (c) =>
+    c.population?.source_of_truth?.startsWith('/') || c.name?.startsWith('csv') ? 3 : 4;
+  return Math.min(...sources.map(tierOf));
+}
+
+function coverageBasis({ rows, failing, sources, complete, fixture }) {
   const parts = [`${rows.length} member(s) in the population, ${failing.length} failing.`];
-  if (source?.population?.source_of_truth) parts.push(`Source of truth: ${source.population.source_of_truth}.`);
-  if (source?.population?.reconciliation) parts.push(`Reconciliation: ${source.population.reconciliation}.`);
+  // Named individually. "Source of truth: <one file>" on a three-way reconciliation reads as
+  // though one file were the whole basis, which is the overstatement this record must not make.
+  for (const c of sources) {
+    if (c.population?.source_of_truth) parts.push(`Source of truth (${c.name}): ${c.population.source_of_truth}.`);
+    if (c.population?.reconciliation) parts.push(`Reconciliation (${c.name}): ${c.population.reconciliation}.`);
+  }
   if (!complete) parts.push('POPULATION INCOMPLETE - this assertion cannot support a pass.');
   if (fixture) parts.push('NOT REAL EVIDENCE - generated from bundled fixtures.');
   return parts.join(' ');

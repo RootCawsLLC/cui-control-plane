@@ -23,6 +23,9 @@ const wrap = (mod, name) => ({
   collect: mod.collect,
 });
 
+/** Same contract, for the CSV collectors, which carry their own NAME rather than being passed one. */
+const pick = (c) => ({ name: c.NAME, table: c.TABLE, controls: c.CONTROLS, collect: c.collect });
+
 export function selectCollectors(config) {
   const chosen = [];
   const skipped = [];
@@ -33,7 +36,7 @@ export function selectCollectors(config) {
       chosen.push(wrap(entra, 'entra-identities'));
       break;
     case 'csv':
-      chosen.push({ name: csv.identities.NAME, table: csv.identities.TABLE, controls: csv.identities.CONTROLS, collect: csv.identities.collect });
+      chosen.push(pick(csv.identities));
       break;
     case 'okta':
       chosen.push(wrap(okta, 'okta-identities'));
@@ -49,13 +52,36 @@ export function selectCollectors(config) {
       chosen.push(wrap(azure, 'azure-assets'));
       break;
     case 'csv':
-      chosen.push({ name: csv.assets.NAME, table: csv.assets.TABLE, controls: csv.assets.CONTROLS, collect: csv.assets.collect });
+      chosen.push(pick(csv.cloudResources));
       break;
     case 'aws-govcloud':
       chosen.push(wrap(aws, 'aws-assets'));
       break;
     default:
       skipped.push({ name: 'cloud', reason: 'cloud.provider is none - the asset inventory has no cloud half' });
+  }
+
+  // --- CMDB ----------------------------------------------------------------------------------
+  // Deliberately its own setting rather than a mode of cloud.provider. The asset control
+  // reconciles what the CMDB claims against what the cloud reports; tying both to one setting
+  // makes the two halves mutually exclusive, and neither half alone reconciles anything.
+  if (config.cmdb?.source === 'csv') {
+    chosen.push(pick(csv.cmdbAssets));
+  } else {
+    skipped.push({
+      name: 'csv-cmdb-assets',
+      reason: 'cmdb.source is none - no CMDB half, so every cloud asset reads as absent from it',
+    });
+  }
+
+  // --- managed endpoints ---------------------------------------------------------------------
+  if (config.mdm?.source === 'csv') {
+    chosen.push(pick(csv.mdmDevices));
+  } else {
+    skipped.push({
+      name: 'csv-mdm-devices',
+      reason: 'mdm.source is none - managed endpoints are absent from the boundary inventory',
+    });
   }
 
   // --- flat-file sources ---------------------------------------------------------------------
@@ -71,7 +97,7 @@ export function selectCollectors(config) {
 
   for (const [enabled, c] of fileSources) {
     if (enabled) {
-      chosen.push({ name: c.NAME, table: c.TABLE, controls: c.CONTROLS, collect: c.collect });
+      chosen.push(pick(c));
     } else {
       skipped.push({ name: c.NAME, reason: 'not configured' });
     }

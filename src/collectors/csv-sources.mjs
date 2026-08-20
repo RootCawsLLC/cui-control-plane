@@ -26,7 +26,7 @@ function readFile(path) {
   return { ok: true, text, abs };
 }
 
-function makeCsvCollector({ name, table, pathKey, map, describes, fixtureFile }) {
+function makeCsvCollector({ name, table, pathKey, map, describes, fixtureFile, caveats }) {
   const def = TABLES[table];
 
   return {
@@ -63,7 +63,7 @@ function makeCsvCollector({ name, table, pathKey, map, describes, fixtureFile })
         };
       }
 
-      const { objects, missing } = readCsvObjects(file.text, { required: def.required });
+      const { objects, missing, headers } = readCsvObjects(file.text, { required: def.required });
       if (missing.length > 0) {
         return {
           table,
@@ -80,6 +80,15 @@ function makeCsvCollector({ name, table, pathKey, map, describes, fixtureFile })
       }
 
       const rows = objects.map((o) => map(o, collectedAt));
+
+      // A scoping column the export omitted is assumed permissive, because an analyst asked for
+      // the enclave's assets usually exported the enclave's assets. That assumption decides the
+      // DENOMINATOR of the whole CUI-scoped assessment, so it is stated in the assertion record
+      // rather than left in this file's source. An enterprise-wide export with no scope column
+      // silently makes the entire estate the CUI boundary, and the giveaway is denominator
+      // movement - which is exactly the signal AGENTS.md says to alert on.
+      const noted = caveats ? caveats(headers) : [];
+
       return {
         table,
         rows,
@@ -87,6 +96,7 @@ function makeCsvCollector({ name, table, pathKey, map, describes, fixtureFile })
           expected: rows.length,
           examined: rows.length,
           complete: true,
+          ...(noted.length > 0 ? { reconciliation: noted.join(' ') } : {}),
           source_of_truth: file.abs,
         },
         fixture,
@@ -201,11 +211,32 @@ export const identities = makeCsvCollector({
   }),
 });
 
-export const assets = makeCsvCollector({
-  name: 'csv-assets',
-  fixtureFile: 'assets',
+/**
+ * The CMDB half of the asset reconciliation - what the organisation BELIEVES is in the boundary.
+ *
+ * This is its own configured source, not a variant of the cloud one, and the distinction is the
+ * whole control. Reconciliation needs two independently-sourced opinions about the same estate:
+ * what the CMDB claims, and what the cloud actually reports. Wiring both to one config slot makes
+ * them mutually exclusive, and a control that can only ever see one side cannot reconcile
+ * anything - it just restates its single source and calls the difference a finding.
+ *
+ * Concretely, with only this side loaded every asset reads as managed and the unmanaged-asset
+ * finding can never fire; with only the cloud side loaded every asset reads as absent from the
+ * CMDB, which is what a live run against the lab account produced - 82 of 82 failing for one
+ * reason, at full confidence, saying nothing.
+ */
+export const cmdbAssets = makeCsvCollector({
+  name: 'csv-cmdb-assets',
+  fixtureFile: 'cmdb-assets',
   table: 'src_cmdb_assets_snapshot',
-  pathKey: 'cloud.csv_path',
+  pathKey: 'cmdb.assets_path',
+  caveats: (headers) =>
+    headers.includes('in_cui_boundary')
+      ? []
+      : [
+          'Export carried no in_cui_boundary column, so every row was taken as in-boundary. ' +
+            'If this was an enterprise-wide extract, the CUI denominator is the whole estate.',
+        ],
   map: (o, at) => ({
     snapshot_at: at,
     asset_id: o.asset_id,
@@ -213,6 +244,54 @@ export const assets = makeCsvCollector({
     owner: o.owner || null,
     classification: o.classification || null,
     in_cui_boundary: o.in_cui_boundary ? csvBool(o.in_cui_boundary) : true,
+  }),
+});
+
+/**
+ * The cloud half, for an estate with no reachable cloud API - an export from the console, or a
+ * provider this repository has no collector for. It lands in the same table the Azure and AWS
+ * collectors write, so the models stay provider-neutral.
+ */
+export const cloudResources = makeCsvCollector({
+  name: 'csv-cloud-resources',
+  fixtureFile: 'cloud-resources',
+  table: 'src_cloud_resources',
+  pathKey: 'cloud.csv_path',
+  map: (o, at) => ({
+    snapshot_at: at,
+    resource_id: o.resource_id,
+    resource_type: o.resource_type || null,
+    owner_tag: o.owner_tag || null,
+    data_classification_tag: o.data_classification_tag || null,
+    subscription_id: o.subscription_id || null,
+    location: o.location || null,
+  }),
+});
+
+/**
+ * Managed endpoints - the third leg. Laptops are where CUI actually gets opened, and they appear
+ * in neither the CMDB nor the cloud API, so without this source the boundary inventory is missing
+ * the asset class most likely to hold a CUI document.
+ */
+export const mdmDevices = makeCsvCollector({
+  name: 'csv-mdm-devices',
+  fixtureFile: 'mdm-devices',
+  table: 'src_mdm_devices_snapshot',
+  pathKey: 'mdm.devices_path',
+  caveats: (headers) =>
+    headers.includes('enclave_enrolled')
+      ? []
+      : [
+          'Export carried no enclave_enrolled column, so every device was taken as enclave-enrolled.',
+        ],
+  map: (o, at) => ({
+    snapshot_at: at,
+    device_id: o.device_id,
+    assigned_user: o.assigned_user || null,
+    // Absent column means the analyst exported the enclave's enrolment list, which is what was
+    // asked for. A blank VALUE in a present column is still unknown and stays excluded.
+    enclave_enrolled: o.enclave_enrolled ? csvBool(o.enclave_enrolled) : true,
+    agent_last_seen: iso(o.agent_last_seen),
   }),
 });
 

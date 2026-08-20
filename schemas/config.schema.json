@@ -172,6 +172,46 @@
         }
       }
     },
+    "cmdb": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source"
+      ],
+      "description": "The asset system of record - what the organisation believes is in the boundary. Separate from cloud on purpose: the asset control reconciles this against what the cloud actually reports, and one setting driving both makes the two halves mutually exclusive.",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "csv",
+            "none"
+          ]
+        },
+        "assets_path": {
+          "type": "string"
+        }
+      }
+    },
+    "mdm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source"
+      ],
+      "description": "Managed endpoints enrolled in the enclave. Absent from both the CMDB and the cloud API, and the asset class most likely to hold an opened CUI document.",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "csv",
+            "none"
+          ]
+        },
+        "devices_path": {
+          "type": "string"
+        }
+      }
+    },
     "procurement": {
       "type": "object",
       "additionalProperties": false,

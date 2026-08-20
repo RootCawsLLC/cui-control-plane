@@ -7,3 +7,4 @@ st-enclave-scratch,storage-account,platform-team,,true
 kv-enclave-secrets,key-vault,security-engineering,cui,true
 vm-enclave-build-01,virtual-machine,,cui,true
 law-enclave-logs,log-analytics,security-engineering,cui,true
+lt-enclave-0041,managed-endpoint,it-support,cui,true

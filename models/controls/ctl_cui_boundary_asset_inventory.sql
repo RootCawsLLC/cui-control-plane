@@ -1,7 +1,7 @@
 -- control_id: ctl.cui.boundary.asset-inventory
 --
--- population_definition (must match the where clause below, and tests/population.test.mjs
--- checks that the control record and this file still agree):
+-- population_definition (must match the where clause below; src/validate.mjs compares this
+-- restatement against the control record and refuses drift):
 --   All assets attached to the CUI enclave - hosts, storage buckets, databases, SaaS tenants and
 --   managed endpoints - reconciled against the authoritative network ranges and the enclave cloud
 --   account list.

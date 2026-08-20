@@ -23,7 +23,18 @@ identity:
 
 cloud:
   provider: csv
-  csv_path: "inbox/assets.csv"
+  csv_path: "inbox/cloud-resources.csv"
+
+# What the CMDB claims is in the boundary. Configured separately from cloud because the asset
+# control reconciles the two: with only one side present it cannot tell a stale record from an
+# unmanaged asset, and reports whichever direction its single source implies.
+cmdb:
+  source: csv
+  assets_path: "inbox/cmdb-assets.csv"
+
+mdm:
+  source: csv
+  devices_path: "inbox/mdm-devices.csv"
 
 procurement:
   source: csv

@@ -151,7 +151,10 @@ function implemented(control, assertion) {
       { ns: PROPS_NS, name: 'generated', value: 'true' },
       { ns: PROPS_NS, name: 'status', value: control.status },
     ],
-    'responsible-roles': [{ 'role-id': control.owner }],
+    // A role-id alone does not say WHO. OSCAL indexes the parties declared in metadata and expects
+    // a responsible-role to point at one; the parties are already emitted there from the same
+    // owner field, so this closes the loop rather than adding a new fact.
+    'responsible-roles': [{ 'role-id': control.owner, 'party-uuids': [ids.party(control.owner)] }],
     statements: [
       {
         'statement-id': `${control.control_id}_smt`,

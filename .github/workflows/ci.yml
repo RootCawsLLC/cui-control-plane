@@ -41,6 +41,22 @@ jobs:
           fi
           echo "refusal confirmed"
 
+      # Both of these refusals are features, asserted rather than trusted - same pattern as the
+      # SPRS gate above. If either ever succeeds, a control started operating or the 889 population
+      # came clean, and the expectation here needs updating deliberately.
+      - name: Policy generation refuses while no control is operating
+        run: |
+          npm run policy | tee /tmp/policy.txt
+          grep -q "that is the correct result" /tmp/policy.txt
+
+      - name: Section 889 refuses to represent over an unresolved population
+        run: |
+          if npm run representation:889; then
+            echo "::error::an affirmative 889 representation was drafted over failing components"
+            exit 1
+          fi
+          echo "refusal confirmed"
+
       - name: Emit OSCAL O1-O5
         run: npm run emit
 

@@ -43,7 +43,20 @@ step(
   ['variance']
 );
 
-step('6. Emit OSCAL O1-O5 from the fixture assertions', ['emit', 'all', '--out', 'out']);
+step(
+  '6. Policy generation - refuses while no control is operating, and names every control it ' +
+    'skipped and why',
+  ['policy']
+);
+
+step(
+  '7. Section 889 representation, regenerated from the control rather than collected as a form. ' +
+    'Three unresolved manufacturers block it.',
+  ['representation', '889'],
+  { allowFailure: true }
+);
+
+step('8. Emit OSCAL O1-O5 from the fixture assertions', ['emit', 'all', '--out', 'out']);
 
 console.log(
   '\nEverything in out/ is stamped NOT REAL EVIDENCE and re-exports byte-identically.\n' +

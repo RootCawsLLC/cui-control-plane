@@ -8,6 +8,8 @@ import { validate } from './validate.mjs';
 import { coverage, formatCoverage } from './coverage.mjs';
 import { score, formatScore, UnverifiedWeights } from './sprs.mjs';
 import { variance, formatVariance } from './variance.mjs';
+import { policy, formatPolicy } from './policy.mjs';
+import { representation889, formatRepresentation } from './representation.mjs';
 import { serialize } from './oscal/common.mjs';
 import { catalog, profiles } from './oscal/catalog.mjs';
 import { componentDefinition } from './oscal/component-definition.mjs';
@@ -22,6 +24,8 @@ const USAGE = `ccp - CUI control plane
   ccp coverage                    which of the 110 requirements have a control
   ccp sprs      [--assertions D] [--weights F]   derive the SPRS score
   ccp variance  [--assertions D]                 VF/VD per control, from assertion history
+  ccp policy    [--assertions D] [--out D]       generate policy from OPERATING controls only
+  ccp representation 889 [--assertions D] [--out D]   regenerate the Section 889 representation
   ccp emit all  [--assertions D] [--out D]       OSCAL O1-O5
 
 House rules enforced by validate: assertions quantify over a population; query_ref exists and
@@ -81,6 +85,35 @@ function main(argv) {
       }
       throw err;
     }
+  }
+
+  if (command === 'policy') {
+    const assertions = loadAssertions(arg(argv, 'assertions', 'fixtures/assertions'));
+    const result = policy({ assertions });
+    if (result.documents.length > 0) {
+      const outDir = resolve(ROOT, arg(argv, 'out', 'out/policy'));
+      mkdirSync(outDir, { recursive: true });
+      for (const d of result.documents) writeFileSync(join(outDir, d.filename), d.body);
+    }
+    console.log(formatPolicy(result));
+    return 0;
+  }
+
+  if (command === 'representation') {
+    if (sub !== '889') {
+      console.error('only `ccp representation 889` is supported today.');
+      return 1;
+    }
+    const assertions = loadAssertions(arg(argv, 'assertions', 'fixtures/assertions'));
+    const r = representation889({ assertions });
+    if (r.body) {
+      const outDir = resolve(ROOT, arg(argv, 'out', 'out'));
+      mkdirSync(outDir, { recursive: true });
+      writeFileSync(join(outDir, 'representation-889.md'), r.body);
+    }
+    console.log(formatRepresentation(r));
+    // A blocked representation is not a crash, but it must not read as success to a CI step.
+    return r.state === 'affirmative' ? 0 : 3;
   }
 
   if (command === 'emit') {

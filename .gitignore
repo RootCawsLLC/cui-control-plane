@@ -11,3 +11,7 @@ reference/scf/*.xlsx
 reference/1260h/*.snapshot.yaml
 reference/supplier-master.yaml
 .evidence/
+
+# NIST's oscal-cli is bootstrapped from Maven Central by the `oscal` npm package at CI time and
+# writes SARIF logs beside the checkout. Neither is ours to commit.
+oscal-cli-sarif-log-*.json

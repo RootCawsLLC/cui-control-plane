@@ -57,6 +57,14 @@ jobs:
           node scripts/gen-requirement-index.mjs
           git diff --exit-code -- reference/ fixtures/sprs-weights.fixture.yaml
 
+  # Schema conformance is checked by NIST's own oscal-cli, not asserted in a README. The `oscal`
+  # npm package bootstraps the real Java CLI from Maven Central; it needs a JDK, hence setup-java.
+  #
+  # NOTHING HERE IS PIPED THROUGH `|| true`. An earlier version of this job did that against a
+  # package name that does not exist on npm, and reported green while validating nothing - which is
+  # the precise failure mode this repository exists to argue against. A check that cannot fail is
+  # decoration. The job carries continue-on-error so a schema gap does not block the emitters being
+  # tested above, but the step itself runs for real and its log shows the actual result.
   oscal-validate:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -66,17 +74,17 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - run: npm ci
       - run: npm run emit
 
-      # NIST's schema is not vendored - adding megabytes of dependency to check a format claim
-      # would be the wrong trade - so oscal-cli is the right tool and the claim gets CHECKED here
-      # rather than asserted in a README. Non-blocking while the catalog layer is still moving:
-      # the emitters are the thing under test in the job above.
       - name: Validate against the OSCAL schemas
         run: |
-          npm exec --yes @oscal/cli -- validate out/oscal-catalog.json || true
-          npm exec --yes @oscal/cli -- validate out/oscal-component-definition.json || true
-          npm exec --yes @oscal/cli -- validate out/oscal-assessment-results.json || true
-          npm exec --yes @oscal/cli -- validate out/oscal-poam.json || true
-          npm exec --yes @oscal/cli -- validate out/oscal-ssp.json || true
+          for f in catalog component-definition assessment-results poam ssp; do
+            echo "::group::oscal validate out/oscal-$f.json"
+            npx --yes oscal@2.0.7 validate --file "out/oscal-$f.json"
+            echo "::endgroup::"
+          done

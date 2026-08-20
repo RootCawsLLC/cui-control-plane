@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/assertion.schema.json",
+  "title": "Control assertion record",
+  "description": "The canonical control assertion, owned by evidence-pipeline section 3 and reproduced here as a validator rather than redefined. Every control test returns this. Never a screenshot, never a sampled n: a count derived from a reproducible query over the full population is a population statement, and total + failing[] + query_ref + lineage is what an assessor re-runs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "control_id",
+    "as_of",
+    "population_definition",
+    "source_system",
+    "query_ref",
+    "total",
+    "passing_count",
+    "failing_count",
+    "failing",
+    "coverage_basis",
+    "confidence_tier"
+  ],
+  "properties": {
+    "control_id": { "type": "string", "pattern": "^ctl\\.[a-z0-9.-]+$" },
+    "as_of": { "type": "string", "format": "date-time" },
+    "population_definition": { "type": "string", "minLength": 1 },
+    "source_system": { "type": "string", "minLength": 1 },
+    "query_ref": { "type": "string", "minLength": 1 },
+    "total": {
+      "description": "The denominator, and itself a control metric. Alert on denominator movement, not just on failures: if total drifts unexpectedly then the asset inventory - a Decision Support Control - failed before this control did.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "passing_count": { "type": "integer", "minimum": 0 },
+    "failing_count": { "type": "integer", "minimum": 0 },
+    "failing": {
+      "description": "Always fully enumerated. It is the work queue and the variance record; first_observed is what turns a snapshot into a clock.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subject_id", "reason", "first_observed"],
+        "properties": {
+          "subject_id": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "first_observed": { "type": "string", "format": "date-time" },
+          "variance": {
+            "$ref": "https://github.com/RootCawsLLC/cui-control-plane/schemas/variance.schema.json"
+          }
+        }
+      }
+    },
+    "passing": {
+      "description": "Optional, null by default. Populate when the population is small, when an assessor asks, or when the passing set is itself the artifact. Enumerating 400,000 passing rows into every record is storage, not evidence.",
+      "type": ["array", "null"],
+      "items": { "type": "object" }
+    },
+    "coverage_basis": {
+      "description": "Exclusions stated explicitly. Exceptions reduce coverage; they do not vanish from the denominator, and an exception with no expiry is an undocumented control change.",
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence_tier": {
+      "description": "The 1-4 data ladder from fair-cam-controls section 4. A well-built pipeline produces tier 4.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "fixture": {
+      "description": "True marks synthetic data. Fixture assertions are stamped NOT REAL EVIDENCE in every artifact generated from them, and the SPRS scorer refuses to report a submittable score from them.",
+      "type": "boolean"
+    }
+  }
+}

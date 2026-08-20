@@ -1,0 +1,64 @@
+{
+  "control_id": "ctl.scrm.procurement.entity-list-screening",
+  "as_of": "2026-08-19T00:00:00Z",
+  "population_definition": "Every entity in the supplier master with an active or pipeline contractual relationship, screened against the most recent published 1260H list snapshot and current FASC orders.",
+  "source_system": "procurement vendor master joined to a pinned 1260H list snapshot",
+  "query_ref": "models/controls/ctl_scrm_procurement_entity_list_screening.sql",
+  "total": 214,
+  "passing_count": 210,
+  "failing_count": 4,
+  "failing": [
+    {
+      "subject_id": "SUP-00118",
+      "reason": "screened_against_superseded_list_edition",
+      "first_observed": "2026-06-15T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-06-11T00:00:00Z",
+        "variance_detected_at": "2026-06-15T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    },
+    {
+      "subject_id": "SUP-00203",
+      "reason": "screened_against_superseded_list_edition",
+      "first_observed": "2026-06-15T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-06-11T00:00:00Z",
+        "variance_detected_at": "2026-06-15T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    },
+    {
+      "subject_id": "SUP-00341",
+      "reason": "never_screened",
+      "first_observed": "2026-08-04T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-08-04T00:00:00Z",
+        "variance_detected_at": "2026-08-04T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    },
+    {
+      "subject_id": "SUP-00377",
+      "reason": "never_screened",
+      "first_observed": "2026-08-04T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-08-04T00:00:00Z",
+        "variance_detected_at": "2026-08-04T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "source_system"
+      }
+    }
+  ],
+  "passing": null,
+  "coverage_basis": "214 of 214 active and pipeline suppliers. Two were last screened against the list edition published before the June 2026 expansion, so they are unscreened in the sense that matters and are counted as failing rather than as stale data. No supplier matched a listed entity in this snapshot. Named controlled affiliates are resolved manually; where an affiliate relationship is unresolved it is carried as a variance, never as a pass.",
+  "confidence_tier": 3,
+  "fixture": true
+}

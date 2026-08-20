@@ -1,0 +1,68 @@
+control_id: ctl.iam.cui-enclave.mfa
+title: MFA enforced for every human identity in the CUI enclave IdP
+assertion: >-
+  Every active human identity in the CUI enclave identity provider has at least one phishing-
+  resistant authentication factor enrolled and no active authentication policy exempts it.
+layer: cui-enclave
+owner: identity-team
+status: building
+
+# Second control built, after the asset inventory. Chosen on scenario weight x telemetry
+# cleanliness, not on which API was easiest: credential theft against systems holding CUI is the
+# highest-weight scenario in the enclave, and the enclave IdP is the cleanest population
+# available - one authoritative list, one API, an unambiguous human-versus-service split.
+split_rationale: >-
+  Split from ctl.iam.corp-it.mfa. Different owner in practice (enclave identity is operated
+  separately from corporate IT), different threat model (CUI exfiltration versus business email
+  compromise), different failure mode (enclave policy exception versus unmanaged corporate
+  account), and different assessor - a CMMC assessor scores the enclave boundary specifically and
+  does not score corporate IT. One "MFA" entry spanning both is the munged control that makes an
+  SSP indefensible under review.
+
+faircam:
+  - function: resistance
+    primary: true
+  - function: reduce-variance-probability
+    primary: false
+
+population_definition: >-
+  All human identities in the CUI enclave identity provider with status active, excluding service
+  principals and excluding break-glass accounts, which are a separate control with their own
+  population and their own compensating monitoring.
+source_system: enclave IdP (Okta or Entra ID, enclave tenant)
+query_ref: models/controls/ctl_iam_cui_enclave_mfa.sql
+cadence: daily
+
+crosswalk:
+  - framework: nist800171r2
+    reference: "3.5.3"
+    confidence: high
+    basis: >-
+      The multifactor authentication requirement. This control is the enclave-scoped half of it;
+      the corporate-IT half is ctl.iam.corp-it.mfa and is out of the assessment boundary.
+  - framework: scf
+    reference: "IAC-06"
+    confidence: medium
+    basis: >-
+      SCF's multi-factor authentication control, used here as the crosswalk anchor from which
+      SOC 2 / ISO / CSF edges are inherited rather than hand-built. Medium until resolved against
+      a local SCF release by scripts/import-scf.mjs - the identifier is carried from a reference
+      example, not yet from the authority.
+    inherited_via_scf: false
+
+scenarios:
+  - scn.cred-theft.cui-enclave
+  - scn.cui-exfil.enclave
+
+policy_ref: null
+
+cost:
+  capex: 0
+  opex_annual: 0
+  basis: Unpriced pending the Phase 0 boundary decision.
+
+measurement:
+  intended_efficacy: null
+  variant_efficacy: null
+  coverage: null
+  confidence_tier: null

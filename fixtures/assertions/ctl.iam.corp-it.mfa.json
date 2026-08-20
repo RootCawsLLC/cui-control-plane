@@ -1,0 +1,52 @@
+{
+  "control_id": "ctl.iam.corp-it.mfa",
+  "as_of": "2026-08-19T00:00:00Z",
+  "population_definition": "All human identities in the corporate identity provider with status active, excluding service principals. Explicitly excludes enclave identities.",
+  "source_system": "corporate IdP (Okta or Entra ID, corporate tenant)",
+  "query_ref": "models/controls/ctl_iam_corp_it_mfa.sql",
+  "total": 890,
+  "passing_count": 887,
+  "failing_count": 3,
+  "failing": [
+    {
+      "subject_id": "c_00412",
+      "reason": "conditional_access_exception_active",
+      "first_observed": "2026-05-02T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-05-02T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    },
+    {
+      "subject_id": "c_00790",
+      "reason": "no_factor_enrolled",
+      "first_observed": "2026-08-17T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-08-17T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    },
+    {
+      "subject_id": "c_00791",
+      "reason": "no_factor_enrolled",
+      "first_observed": "2026-08-17T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-08-17T00:00:00Z",
+        "remediation_started_at": null,
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    }
+  ],
+  "passing": null,
+  "coverage_basis": "890 of 890 active corporate human identities; no exclusions. OUT OF THE CMMC ASSESSMENT BOUNDARY - this control is not scored by an assessor and does not reach the SPRS derivation, which is the point of keeping it a separate record. The corporate IdP records no per-account change timestamp we trust, so started_at_basis is equals_detected throughout and every duration derived from this control understates the true window.",
+  "confidence_tier": 3,
+  "fixture": true
+}

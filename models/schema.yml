@@ -1,0 +1,111 @@
+version: 2
+
+# dbt tests ARE the control tests, and dbt lineage IS the audit trail. That is the whole reason
+# the transform layer is dbt rather than a pile of scripts: what an assessor is given is the
+# assertion record, the query that produced it, the lineage, and the time series - and three of
+# those four are artifacts dbt produces for free once the models are shaped this way.
+
+sources:
+  - name: enclave_idp
+    description: CUI enclave identity provider tenant. Snapshotted, never queried live.
+    tables:
+      - name: users_snapshot
+  - name: corp_idp
+    description: Corporate identity provider tenant. Out of the assessment boundary.
+    tables:
+      - name: users_snapshot
+  - name: cmdb
+    tables:
+      - name: assets_snapshot
+  - name: aws_govcloud
+    description: >-
+      AWS GovCloud Config. History-native, which is why it is the posture source rather than a
+      current-state tool - Variance Duration needs to know what was true on a past date, not what
+      is true now.
+    tables:
+      - name: config_items
+  - name: enclave
+    tables:
+      - name: accounts
+  - name: mdm
+    tables:
+      - name: devices_snapshot
+  - name: procurement
+    tables:
+      - name: supplier_master
+  - name: inventory
+    tables:
+      - name: components
+  - name: ir
+    tables:
+      - name: incidents
+  - name: dibnet
+    tables:
+      - name: submissions
+  - name: reference
+    description: >-
+      Published lists ingested as pinned reference tables. Each carries the edition it was
+      published at, so that "screened" can be distinguished from "screened against what".
+    tables:
+      - name: entity_list_1260h
+      - name: fasc_orders
+      - name: covered_telecom
+
+models:
+  - name: ctl_cui_boundary_asset_inventory
+    description: >-
+      The denominator for every other CUI-scoped control. Built first, and not for convenience:
+      if this population drifts, every downstream control failed before its own control did.
+    columns:
+      - name: subject_id
+        tests: [not_null]
+      - name: passing
+        tests: [not_null]
+    tests:
+      # Denominator stability. Population size is itself a control metric, so an unexplained
+      # move in the row count is a finding about the asset inventory rather than noise.
+      - dbt_utils.equal_rowcount:
+          compare_model: ref('ctl_cui_boundary_asset_inventory')
+          config:
+            severity: warn
+
+  - name: ctl_iam_cui_enclave_mfa
+    columns:
+      - name: subject_id
+        tests: [not_null, unique]
+      - name: passing
+        tests: [not_null]
+
+  - name: ctl_iam_corp_it_mfa
+    columns:
+      - name: subject_id
+        tests: [not_null, unique]
+
+  - name: ctl_scrm_procurement_entity_list_screening
+    columns:
+      - name: subject_id
+        tests: [not_null, unique]
+
+  - name: ctl_scrm_procurement_telecom_equipment_attestation
+    columns:
+      - name: subject_id
+        tests: [not_null, unique]
+
+  - name: ctl_ir_dibnet_incident_reporting
+    description: >-
+      Event-triggered. Zero rows is a valid result - a pass over an empty population - so this
+      model deliberately carries no row-count test. Asserting rows exist would turn a quiet
+      quarter into a failure.
+    columns:
+      - name: subject_id
+        tests: [not_null, unique]
+
+  - name: variance_events
+    description: >-
+      The four variance timestamps. Empty until the control models have accumulated more than one
+      snapshot, because a variance episode is a transition and a single snapshot has none.
+    columns:
+      - name: started_at_basis
+        tests:
+          - accepted_values:
+              values: ['source_system', 'interpolated', 'equals_detected']

@@ -1,0 +1,75 @@
+control_id: ctl.scrm.procurement.entity-list-screening
+title: No supplier appears on a current prohibited-entity list
+assertion: >-
+  No entity in the supplier master appears on the current Section 1260H list or on a current FASC
+  exclusion or removal order, and every supplier has been screened against a list snapshot no
+  older than the refresh cadence.
+layer: procurement
+owner: procurement-and-supply-chain
+status: planned
+
+# The shape here is a population DIFF, not a sample and not a questionnaire. Two populations
+# meet: the supplier master (ours) and the published list (theirs). The test is set membership.
+# A questionnaire asks a supplier to attest it is not on a list; this asks the list.
+#
+# Full diff every cycle, never a sample - the list itself changes on a recurring cadence
+# (65 entities added June 2026), so a supplier screened clean last quarter is not screened now.
+# The refresh is scheduled like any other extract rather than treated as an annual event.
+faircam:
+  - function: preventing-misaligned-decisions
+    primary: true
+  - function: control-monitoring
+    primary: false
+
+population_definition: >-
+  Every entity in the supplier master with an active or pipeline contractual relationship,
+  including subcontractors flowed down to, screened against the most recent published 1260H list
+  snapshot and the current FASC exclusion and removal orders. Named controlled affiliates of a
+  listed entity are in the population; identifying them is the part that is not mechanical and is
+  recorded as a variance when unresolved, never as a pass.
+source_system: procurement vendor master joined to a pinned 1260H list snapshot
+query_ref: models/controls/ctl_scrm_procurement_entity_list_screening.sql
+cadence: weekly
+
+sla:
+  variance_duration_hours: 168
+  clock_starts_at: variance_detected_at
+  authority: >-
+    House target, not a statutory clock. The 1260H contracting prohibition has no cure period -
+    it is a bar on contracting, renewing or extending - so the SLA here is how fast we detect and
+    unwind, not how long we are permitted to remain in breach.
+
+crosswalk:
+  - framework: far
+    reference: "FY2021 NDAA 1260H"
+    confidence: high
+    basis: >-
+      The statutory source of the contracting prohibition, effective 30 June 2026. Cited as the
+      authority; the implementing FAR/DFARS clause reference is a watch item because the clause
+      designation is still settling. See docs/watch-items.md.
+  - framework: fasc
+    reference: "FAR subpart 4.23"
+    confidence: high
+    basis: >-
+      FASC exclusion and removal orders are a separate statutory authority - the Federal
+      Acquisition Supply Chain Security Act, not an NDAA section - but operationally they ask the
+      same population question of the same supplier master, so they are one control rather than
+      two. Conflating the authorities in prose would be an error; sharing the control is not.
+  - framework: nist800171r2
+    reference: "3.11.1"
+    confidence: low
+    basis: >-
+      Supply-chain entity risk is arguably in scope of the risk-assessment requirement, but this
+      control is not what an assessor examines for 3.11.1 and claiming it would inflate coverage.
+      Recorded at low confidence so the edge is visible and arguable rather than quietly asserted.
+
+scenarios:
+  - scn.scrm.prohibited-entity
+
+policy_ref: null
+
+measurement:
+  intended_efficacy: null
+  variant_efficacy: null
+  coverage: null
+  confidence_tier: null

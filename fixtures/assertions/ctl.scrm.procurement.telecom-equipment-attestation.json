@@ -1,0 +1,52 @@
+{
+  "control_id": "ctl.scrm.procurement.telecom-equipment-attestation",
+  "as_of": "2026-08-19T00:00:00Z",
+  "population_definition": "Every hardware item in the asset inventory and every component in the SBOM/HBOM for systems in and adjacent to the CUI boundary, resolved to a manufacturer and cross-referenced against the covered-equipment list.",
+  "source_system": "hardware asset inventory and SBOM/HBOM joined to the covered-equipment reference",
+  "query_ref": "models/controls/ctl_scrm_procurement_telecom_equipment_attestation.sql",
+  "total": 1842,
+  "passing_count": 1839,
+  "failing_count": 3,
+  "failing": [
+    {
+      "subject_id": "CMP-118204",
+      "reason": "manufacturer_unresolved",
+      "first_observed": "2026-08-01T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-08-01T00:00:00Z",
+        "remediation_started_at": "2026-08-08T00:00:00Z",
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    },
+    {
+      "subject_id": "CMP-118205",
+      "reason": "manufacturer_unresolved",
+      "first_observed": "2026-08-01T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-08-01T00:00:00Z",
+        "remediation_started_at": "2026-08-08T00:00:00Z",
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    },
+    {
+      "subject_id": "CMP-118206",
+      "reason": "manufacturer_unresolved",
+      "first_observed": "2026-08-01T00:00:00Z",
+      "variance": {
+        "variance_started_at": null,
+        "variance_detected_at": "2026-08-01T00:00:00Z",
+        "remediation_started_at": "2026-08-08T00:00:00Z",
+        "remediation_completed_at": null,
+        "started_at_basis": "equals_detected"
+      }
+    }
+  ],
+  "passing": null,
+  "coverage_basis": "1842 of 1842 components across the enclave asset inventory and adjacent SBOM/HBOM. Three components on one refurbished switch chassis cannot be resolved to a manufacturer. They are counted as FAILING, not dropped and not passed: an unresolved manufacturer is a variance, and treating it as absence of one would turn an incomplete answer into a clean bill of health.",
+  "confidence_tier": 3,
+  "fixture": true
+}

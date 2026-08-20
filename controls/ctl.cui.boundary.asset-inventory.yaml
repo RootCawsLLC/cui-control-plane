@@ -1,0 +1,68 @@
+control_id: ctl.cui.boundary.asset-inventory
+title: CUI boundary asset inventory is complete and reconciled
+assertion: >-
+  Every asset that stores, processes or transmits CUI appears in the boundary inventory with an
+  owner and a classification, and no asset in the enclave network ranges is absent from it.
+layer: cui-boundary
+owner: security-engineering
+status: building
+
+# This one goes first, and not for sequencing convenience. It is the denominator for the entire
+# CUI-scoped assessment: every other control's population is a subset of this one. Per the
+# standing discipline, if this population drifts then this control failed BEFORE the control
+# that appears to have failed downstream. Alert on movement in `total`, not only on failures.
+faircam:
+  - function: provide-asset-data
+    primary: true
+  - function: control-monitoring
+    primary: false
+
+population_definition: >-
+  All assets attached to the CUI enclave - hosts, storage buckets, databases, SaaS tenants and
+  managed endpoints - reconciled against the authoritative network ranges and the enclave cloud
+  account list. Excludes corporate IT assets outside the boundary; those are a different
+  population and, where they matter, a different control.
+source_system: enclave CMDB reconciled against AWS GovCloud Config and enclave MDM
+query_ref: models/controls/ctl_cui_boundary_asset_inventory.sql
+cadence: daily
+
+crosswalk:
+  - framework: nist800171r2
+    reference: "3.4.1"
+    confidence: high
+    basis: >-
+      The configuration-management family's inventory requirement. This control produces the
+      system inventory that requirement is assessed against.
+  - framework: nist800171r2
+    reference: "3.12.4"
+    confidence: medium
+    basis: >-
+      The SSP requirement is assessed partly on whether the described boundary matches the real
+      one. This inventory is what makes that comparison mechanical rather than narrative. Medium
+      because it evidences part of 3.12.4, not the whole of it.
+  - framework: dfars
+    reference: "252.204-7012(b)"
+    confidence: medium
+    basis: >-
+      The safeguarding obligation attaches to covered contractor information systems, so the set
+      of such systems has to be enumerable before the obligation can be shown to be met. Medium:
+      supports the clause rather than satisfying it.
+
+scenarios:
+  - scn.cui-exfil.enclave
+  - scn.scrm.covered-telecom
+
+policy_ref: null
+
+cost:
+  capex: 0
+  opex_annual: 0
+  basis: >-
+    Unpriced pending the Phase 0 boundary decision - the enclave-versus-enterprise choice moves
+    this number by an order of magnitude, so a placeholder here would be false precision.
+
+measurement:
+  intended_efficacy: null
+  variant_efficacy: null
+  coverage: null
+  confidence_tier: null

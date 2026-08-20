@@ -1,0 +1,58 @@
+control_id: ctl.iam.corp-it.mfa
+title: MFA enforced for every human identity in the corporate IdP
+assertion: >-
+  Every active human identity in the corporate identity provider has at least one authentication
+  factor enrolled and no conditional-access exception grants factorless sign-in.
+layer: corp-it
+owner: it-operations
+status: planned
+
+# This control is OUT OF THE CMMC ASSESSMENT BOUNDARY and exists in the inventory anyway. That is
+# deliberate and it is the whole demonstration of the layer split: the assessor scores
+# ctl.iam.cui-enclave.mfa and does not score this one, but the business still carries the risk
+# this one addresses. Merging the two to "have one MFA control" would produce a population that
+# means nothing to either audience - and would import corporate-IT failures into the SPRS score,
+# where they do not belong and where they would cost real points.
+split_rationale: >-
+  Split from ctl.iam.cui-enclave.mfa. Different owner (IT operations, not the enclave identity
+  team), different cost profile (licences already sunk in the corporate tenant), different threat
+  model (business email compromise and session theft rather than CUI exfiltration), different
+  failure mode (unmanaged or contractor accounts rather than enclave policy exceptions), and no
+  assessor scores it.
+
+faircam:
+  - function: resistance
+    primary: true
+
+population_definition: >-
+  All human identities in the corporate identity provider with status active, excluding service
+  principals. Explicitly excludes enclave identities, which are the population of
+  ctl.iam.cui-enclave.mfa.
+source_system: corporate IdP (Okta or Entra ID, corporate tenant)
+query_ref: models/controls/ctl_iam_corp_it_mfa.sql
+cadence: weekly
+
+crosswalk:
+  - framework: scf
+    reference: "IAC-06"
+    confidence: medium
+    basis: >-
+      Same SCF anchor as the enclave control, which is exactly why they must be separate records:
+      one framework identifier legitimately maps to two controls, and the many-to-many direction
+      is control-to-framework, never framework-to-control. Medium pending SCF resolution.
+    inherited_via_scf: false
+
+# Deliberately NOT crosswalked to 800-171 3.5.3. The requirement applies within the CUI boundary;
+# claiming this control against it would inflate apparent coverage of the assessed scope with
+# work an assessor will not look at.
+
+scenarios:
+  - scn.phish.bec
+
+policy_ref: null
+
+measurement:
+  intended_efficacy: null
+  variant_efficacy: null
+  coverage: null
+  confidence_tier: null

@@ -1,0 +1,87 @@
+control_id: ctl.ir.dibnet.incident-reporting
+title: Every reportable cyber incident is reported to DIBNet within 72 hours of discovery
+assertion: >-
+  Every incident classified as reportable under the safeguarding clause has a DIBNet submission
+  timestamped within 72 hours of internal discovery, a preserved system image retained for 90
+  days, and - where malicious software was isolated - a submission to DC3.
+layer: dibnet
+owner: incident-response
+status: planned
+
+# The one genuinely different shape in this inventory: event-triggered, not continuously sampled.
+# There is no standing population to diff, so the population is the set of incidents in a window
+# and the control can be vacuously true - zero reportable incidents is a passing assertion over an
+# empty population, and the assertion record says so via total: 0 rather than hiding it.
+#
+# The four variance timestamps map onto it directly, which is what turns the 72-hour SLA into
+# something measured rather than assumed:
+#   variance_started_at       = incident occurrence (proxy - see started_at_basis below)
+#   variance_detected_at      = internal discovery      <- the clock the CLAUSE starts from
+#   remediation_started_at    = IR triage begins
+#   remediation_completed_at  = DIBNet submission accepted
+faircam:
+  - function: loss-reduction
+    primary: true
+  - function: provide-threat-data
+    primary: false
+
+population_definition: >-
+  Every incident record in the IR system classified as a cyber incident affecting a covered
+  contractor information system or the CUI it holds, within the reporting window. Incidents
+  triaged as non-reportable remain in the population with their classification and the basis for
+  it, because "we decided it was not reportable" is the judgement most worth being able to review
+  later - dropping them from the denominator would make a missed classification invisible.
+source_system: incident response platform joined to DIBNet submission receipts
+query_ref: models/controls/ctl_ir_dibnet_incident_reporting.sql
+cadence: event-driven
+
+sla:
+  variance_duration_hours: 72
+  clock_starts_at: variance_detected_at
+  authority: >-
+    DFARS 252.204-7012. The clause's clock legally starts at DISCOVERY, not at true onset, so the
+    SLA is measured from variance_detected_at and not from variance_started_at. Any report of
+    this control's duration states which window it is showing: where the full
+    occurrence-to-submission window is unavailable, the artifact discloses that it is reporting
+    detected-to-submitted instead, because the two are not the same number and only one of them
+    is the legal test.
+
+crosswalk:
+  - framework: dfars
+    reference: "252.204-7012(c)"
+    confidence: high
+    basis: >-
+      The incident-reporting obligation itself - 72-hour report, media preservation, malware
+      submission. This control is the process control behind it.
+  - framework: dfars
+    reference: "252.204-7012(m)"
+    confidence: medium
+    basis: >-
+      Flow-down to subcontractors handling CUI. This control evidences our own reporting; the
+      flow-down obligation is partly contractual and is evidenced through the supplier master
+      rather than here. Medium, and the gap is deliberate rather than overlooked.
+  - framework: nist800171r2
+    reference: "3.6.2"
+    confidence: high
+    basis: >-
+      The requirement to track, document and report incidents to designated officials. The DIBNet
+      submission is the reporting leg of it.
+  - framework: nist800171r2
+    reference: "3.6.1"
+    confidence: medium
+    basis: >-
+      The operational incident-handling capability. This control evidences the reporting phase of
+      that capability, not the preparation, detection, containment and recovery phases, which are
+      separate controls not yet built.
+
+scenarios:
+  - scn.dfars.late-report
+  - scn.cui-exfil.enclave
+
+policy_ref: null
+
+measurement:
+  intended_efficacy: null
+  variant_efficacy: null
+  coverage: null
+  confidence_tier: null

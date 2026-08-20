@@ -1,0 +1,13 @@
+node_modules/
+out/
+
+# SCF's licence (CC BY-ND) forbids publishing derivative content, so its OSCAL export is
+# fetched locally and resolved at run time — never vendored. See docs/adr/0006.
+reference/scf/*.json
+reference/scf/*.xlsx
+
+# A live 1260H snapshot or a real supplier master is customer data and does not belong in a
+# public reference repository. Fixtures under fixtures/ are synthetic and are committed.
+reference/1260h/*.snapshot.yaml
+reference/supplier-master.yaml
+.evidence/

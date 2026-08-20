@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/variance.schema.json",
+  "title": "Variance timestamps",
+  "description": "The four timestamps that decompose Variance Duration into FAIR-CAM segments, so you can see which function is slow: started to detected is Control Monitoring, detected to remediation_started is Treatment Selection and Prioritisation, remediation_started to completed is Implementation. This is the piece almost nobody emits and it is the whole point.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["variance_detected_at", "started_at_basis"],
+  "properties": {
+    "variance_started_at": { "type": ["string", "null"], "format": "date-time" },
+    "variance_detected_at": { "type": "string", "format": "date-time" },
+    "remediation_started_at": { "type": ["string", "null"], "format": "date-time" },
+    "remediation_completed_at": { "type": ["string", "null"], "format": "date-time" },
+    "started_at_basis": {
+      "description": "How variance_started_at was established, in descending order of quality. source_system is the source's own change timestamp - cloud config item capture, IdP event log, Git commit. interpolated bounds it to the collection interval. equals_detected systematically understates Variance Duration and overstates reliability, so it must be declared rather than inferred: every artifact reporting a duration derived from it says so, and treats the resulting reliability as an upper bound.",
+      "type": "string",
+      "enum": ["source_system", "interpolated", "equals_detected"]
+    }
+  }
+}

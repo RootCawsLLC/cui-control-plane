@@ -1,0 +1,54 @@
+control_id: ctl.scrm.procurement.telecom-equipment-attestation
+title: No covered telecommunications or video surveillance equipment in use
+assertion: >-
+  No hardware or software item in the asset and component inventory resolves to a covered
+  manufacturer or a named affiliate, as a substantial or essential component of any system or as
+  critical technology.
+layer: procurement
+owner: procurement-and-supply-chain
+status: planned
+
+# Same population-diff pattern as entity-list screening, one population lower: components rather
+# than counterparties. The Section 889 annual representation is then REGENERATED from this
+# control's assertion record rather than re-collected as a standalone form each year - which is
+# the difference between an attestation someone signs and a claim a query can prove.
+faircam:
+  - function: preventing-misaligned-decisions
+    primary: true
+  - function: provide-asset-data
+    primary: false
+
+population_definition: >-
+  Every hardware item in the asset inventory and every component in the SBOM/HBOM for systems in
+  and adjacent to the CUI boundary, resolved to a manufacturer and cross-referenced against the
+  covered-equipment list. Items whose manufacturer cannot be resolved are carried as unresolved
+  members of the population and reported as variances - never dropped from the denominator, which
+  is the move that silently turns an incomplete answer into a clean one.
+source_system: hardware asset inventory and SBOM/HBOM joined to the covered-equipment reference
+query_ref: models/controls/ctl_scrm_procurement_telecom_equipment_attestation.sql
+cadence: monthly
+
+crosswalk:
+  - framework: far
+    reference: "52.204-25"
+    confidence: high
+    basis: >-
+      The prohibition on contracting for covered telecommunications equipment or services. This
+      control produces the evidence behind it.
+  - framework: far
+    reference: "52.204-24"
+    confidence: high
+    basis: >-
+      The representation clause. The annual representation is generated from this control's
+      assertion record rather than collected separately - see docs/plan.md Phase 4.
+
+scenarios:
+  - scn.scrm.covered-telecom
+
+policy_ref: null
+
+measurement:
+  intended_efficacy: null
+  variant_efficacy: null
+  coverage: null
+  confidence_tier: null

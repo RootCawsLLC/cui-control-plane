@@ -1,0 +1,82 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Validate the control inventory
+        run: npm run validate
+
+      - name: Coverage report
+        run: npm run coverage
+
+      # The refusal is a feature and is asserted here rather than trusted. If this step ever
+      # succeeds, somebody populated the SPRS weights without verifying them, or removed the guard.
+      - name: SPRS refuses to score against unpopulated weights
+        run: |
+          if node src/cli.mjs sprs --weights reference/sprs-weights.yaml; then
+            echo "::error::the SPRS scorer produced a score from unverified weights"
+            exit 1
+          fi
+          echo "refusal confirmed"
+
+      - name: Emit OSCAL O1-O5
+        run: npm run emit
+
+      # Byte-stability is the property the deterministic v5 UUIDs exist to create. Asserted on
+      # every run, because it is the kind of thing a single Date.now() silently destroys.
+      - name: Artifacts re-export byte-identically
+        run: |
+          cp -r out out.first
+          node src/cli.mjs emit all --out out
+          diff -r out.first out
+          echo "byte-stable"
+
+      # Generated reference files are generated. A hand edit to the requirement index is how a
+      # wrong identifier gets in and stays in.
+      - name: Generated reference files match their generator
+        run: |
+          node scripts/gen-requirement-index.mjs
+          git diff --exit-code -- reference/ fixtures/sprs-weights.fixture.yaml
+
+  oscal-validate:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run emit
+
+      # NIST's schema is not vendored - adding megabytes of dependency to check a format claim
+      # would be the wrong trade - so oscal-cli is the right tool and the claim gets CHECKED here
+      # rather than asserted in a README. Non-blocking while the catalog layer is still moving:
+      # the emitters are the thing under test in the job above.
+      - name: Validate against the OSCAL schemas
+        run: |
+          npm exec --yes @oscal/cli -- validate out/oscal-catalog.json || true
+          npm exec --yes @oscal/cli -- validate out/oscal-component-definition.json || true
+          npm exec --yes @oscal/cli -- validate out/oscal-assessment-results.json || true
+          npm exec --yes @oscal/cli -- validate out/oscal-poam.json || true
+          npm exec --yes @oscal/cli -- validate out/oscal-ssp.json || true

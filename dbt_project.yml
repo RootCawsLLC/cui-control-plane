@@ -1,0 +1,26 @@
+name: cui_control_plane
+version: 0.1.0
+config-version: 2
+profile: cui_control_plane
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  cui_control_plane:
+    staging:
+      +materialized: view
+    controls:
+      # Control models are snapshotted, not just materialised. History is where Variance
+      # Duration comes from; a table that overwrites makes this a dashboard rather than an
+      # instrument, and the risk half of the argument disappears with it.
+      +materialized: incremental
+      +incremental_strategy: append
+      +unique_key: ['as_of', 'control_id', 'subject_id']
+    variance:
+      +materialized: table
+
+vars:
+  # Passed per run: `dbt run --vars '{as_of: 2026-08-19T00:00:00Z}'`. Never defaulted to the
+  # current clock inside a model - the runner's clock is not an evidence timestamp.
+  as_of: null

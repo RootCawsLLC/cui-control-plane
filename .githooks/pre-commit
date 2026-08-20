@@ -1,0 +1,22 @@
+#!/bin/sh
+# The RootCawsLLC account rejects pushes that expose its private address, so a commit made
+# under the wrong identity cannot be fixed forward — it has to be rewritten. Refuse it here,
+# before the commit exists, which is the cheapest place to catch it.
+#
+# Hooks and local config do not survive a clone: a fresh checkout must run `npm run setup`
+# once, or this guard is not running at all.
+
+required='RootCawsLLC <317738477+RootCawsLLC@users.noreply.github.com>'
+
+# GIT_AUTHOR_IDENT resolves the identity this commit would actually use, whichever layer it
+# comes from (-c flags, env, local, global). Trailing timestamp and offset are not identity.
+actual=$(git var GIT_AUTHOR_IDENT 2>/dev/null | sed 's/ [0-9][0-9]* [-+][0-9][0-9]*$//')
+
+if [ "$actual" != "$required" ]; then
+	echo "pre-commit: refusing to commit under the wrong identity." >&2
+	echo "  expected: $required" >&2
+	echo "  actual:   ${actual:-<unset>}" >&2
+	echo "Fix for this clone:  npm run setup" >&2
+	echo "Or for one commit:   git -c user.name=RootCawsLLC -c user.email=317738477+RootCawsLLC@users.noreply.github.com commit ..." >&2
+	exit 1
+fi

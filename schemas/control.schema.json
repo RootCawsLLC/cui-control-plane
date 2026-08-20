@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/control.schema.json",
+  "title": "Control record",
+  "description": "One control in the canonical inventory. Field names for population_definition, source_system and query_ref are flat and match the canonical control assertion schema exactly - they are the contract between the control record (which declares the population) and the pipeline (which produces assertions against it). Do not nest or rename them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "control_id",
+    "title",
+    "assertion",
+    "layer",
+    "owner",
+    "status",
+    "faircam",
+    "population_definition",
+    "source_system",
+    "query_ref"
+  ],
+  "properties": {
+    "control_id": {
+      "description": "ctl.<domain>.<layer>.<control>. Stable and never reused; renaming is a new id plus a supersedes edge. Stability is what makes deterministic UUIDs and reviewable diffs possible.",
+      "type": "string",
+      "pattern": "^ctl\\.(iam|data|network|endpoint|appsec|logging|change|vendor|bcdr|people|cui|scrm|ir)\\.[a-z0-9-]+\\.[a-z0-9-]+$"
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "assertion": {
+      "description": "The control as a testable claim quantifying over a population - every, no, none. 'Access is reviewed periodically' is not an assertion. This text is ours; it is never lifted from a framework. A test enforces the quantifier.",
+      "type": "string",
+      "minLength": 1
+    },
+    "layer": {
+      "description": "Where the control lives. The layer is the reason two controls a framework calls one thing are two records here.",
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["operating", "building", "planned", "retired"] },
+    "supersedes": { "type": ["string", "null"] },
+    "split_rationale": {
+      "description": "Required when another control in the inventory shares this control's domain and final segment - that is, when this record exists because of a layer split. States which of owner / cost / threat model / failure mode differs. The validator enforces its presence, because an unjustified split inflates the inventory just as surely as a munged control destroys it.",
+      "type": "string"
+    },
+    "faircam": {
+      "description": "A control commonly serves several FAIR-CAM functions, each independently measured. Exactly one entry is primary.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["function", "primary"],
+        "properties": {
+          "function": { "type": "string", "minLength": 1 },
+          "primary": { "type": "boolean" }
+        }
+      }
+    },
+    "population_definition": {
+      "description": "Prose denominator, written for the assessor. Must agree with the where clause of query_ref; drift between the two is a finding and tests/population.test.mjs looks for it.",
+      "type": "string",
+      "minLength": 1
+    },
+    "source_system": { "type": "string", "minLength": 1 },
+    "query_ref": {
+      "description": "Repository-relative path to the dbt model that produces the population. The model IS the query_ref.",
+      "type": "string",
+      "pattern": "^models/controls/[a-z0-9_]+\\.sql$"
+    },
+    "cadence": {
+      "description": "How often the control is evaluated. event-driven is for controls with no continuously sampled population - the DFARS 7012 report is the one in this inventory.",
+      "type": "string",
+      "enum": ["continuous", "daily", "weekly", "monthly", "quarterly", "annual", "event-driven"]
+    },
+    "crosswalk": {
+      "description": "Framework references this control serves. Identifiers plus our own reasoning only - never reproduced framework text. Confidence is mandatory: an over-confident crosswalk an assessor relies on is worse than an absent one.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["framework", "reference", "confidence", "basis"],
+        "properties": {
+          "framework": {
+            "type": "string",
+            "enum": ["nist800171r2", "dfars", "far", "scf", "csf2", "nist80053r5", "fasc"]
+          },
+          "reference": { "type": "string", "minLength": 1 },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "basis": {
+            "description": "Our stated reasoning, so a reviewer can disagree with it.",
+            "type": "string",
+            "minLength": 1
+          },
+          "inherited_via_scf": {
+            "description": "True when this edge was resolved from the SCF crosswalk rather than authored here. Inherited and hand-maintained mappings must never be confused, so they are marked rather than merged.",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "scenarios": {
+      "description": "The join to risk. A control with no scenario is unpriced - either find its scenario or ask why it exists. The validator warns rather than fails, because a control genuinely can be built before its scenario is written.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^scn\\.[a-z0-9.-]+$" }
+    },
+    "policy_ref": {
+      "description": "Set only once the control is observed holding. Policy is generated from this record, never authored ahead of it - a policy_ref on a control whose status is planned or building is refused by the validator.",
+      "type": ["string", "null"]
+    },
+    "cost": {
+      "description": "What makes risk-reduction-per-dollar computable. Populate it or the prioritisation has nothing to divide by.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "capex": { "type": "number" },
+        "opex_annual": { "type": "number" },
+        "basis": { "type": "string" }
+      }
+    },
+    "sla": {
+      "description": "A Variance Duration target in hours. The 72-hour DFARS clock and the 180-day POA&M closeout are both just Variance Duration SLAs the pipeline already computes; they are stated here rather than tracked on a separate compliance calendar.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variance_duration_hours", "clock_starts_at", "authority"],
+      "properties": {
+        "variance_duration_hours": { "type": "number" },
+        "clock_starts_at": {
+          "description": "Which of the four variance timestamps the SLA is measured from. The DFARS clock legally starts at discovery, not at true onset, so this is never assumed.",
+          "type": "string",
+          "enum": ["variance_started_at", "variance_detected_at"]
+        },
+        "authority": { "type": "string", "minLength": 1 }
+      }
+    },
+    "measurement": {
+      "description": "FAIR-CAM parameters, emitted as OSCAL props. Absent means not yet measured, which is honest; a fabricated efficacy is not.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intended_efficacy": { "type": ["number", "null"] },
+        "variant_efficacy": { "type": ["number", "null"] },
+        "coverage": { "type": ["number", "null"] },
+        "confidence_tier": { "type": ["integer", "null"], "minimum": 1, "maximum": 4 }
+      }
+    }
+  }
+}

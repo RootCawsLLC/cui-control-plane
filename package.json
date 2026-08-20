@@ -26,11 +26,15 @@
     "demo": "node scripts/demo.mjs",
     "variance": "node src/cli.mjs variance",
     "policy": "node src/cli.mjs policy",
-    "representation:889": "node src/cli.mjs representation 889"
+    "representation:889": "node src/cli.mjs representation 889",
+    "init": "node src/cli.mjs init",
+    "doctor": "node src/cli.mjs doctor",
+    "pipeline": "node src/cli.mjs pipeline"
   },
   "dependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "yaml": "^2.8.1"
+    "yaml": "^2.8.1",
+    "duckdb": "^1.1.3"
   }
 }

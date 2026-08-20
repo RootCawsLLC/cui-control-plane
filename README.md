@@ -5,17 +5,30 @@ edges rather than as five compliance programmes. The pipeline that produces the 
 also produces Variance Frequency and Variance Duration on every control, which is what makes it a
 risk instrument rather than a compliance cost centre.
 
-**A reference architecture, not an engagement.** Every assertion record under `fixtures/` is
-synthetic and stamped `NOT REAL EVIDENCE`; every artifact generated from them carries the stamp
-through, and the SPRS scorer refuses to call the result submittable.
+## Start here
 
 ```bash
-npm install && npm test
+npm install
+npm run pipeline
 ```
 
+That collects from bundled fixtures, builds a local DuckDB warehouse, evaluates every control and
+writes assertion records. **No Python, no warehouse, no credentials, nothing contacts a real
+system.** Five controls assert and one is withheld — and the withheld one is the point: no collector
+populates its source, so the tool refuses to say anything rather than reporting 0 of 0 passing.
+
+Then make it yours:
+
 ```bash
-npm run validate && npm run coverage && npm run emit
+npm run init      # twelve questions, every one with a working default
+npm run doctor    # what is configured, what is missing, which controls will be withheld
 ```
+
+**[docs/SETUP.md](docs/SETUP.md) is the guided walkthrough** — the three decisions only you can
+make, how to wire your first real source, and exactly what needs customising.
+
+Everything under `fixtures/` is synthetic and stamped `NOT REAL EVIDENCE`; every artifact generated
+from it carries the stamp through, and the SPRS scorer refuses to call the result submittable.
 
 ## The framing
 
@@ -41,6 +54,11 @@ repository is organised around **one** control inventory that each regime crossw
 ## What is here
 
 ```
+ccp.config.yaml      THE ONE FILE YOU EDIT (gitignored; `npm run init` writes it)
+inbox/               drop CSV exports here - the universal adapter, no credentials needed
+src/collectors/      Entra ID, Azure Resource Graph, and CSV for everything else
+src/warehouse.mjs    DuckDB + a dbt shim, so the models run without Python
+src/pipeline.mjs     collect -> load -> build -> assert
 controls/            the inventory - one YAML record per control
 scenarios/           the join to risk - loss events, no numbers until there are numbers
 exceptions/          reduced coverage with an expiry, never a pass

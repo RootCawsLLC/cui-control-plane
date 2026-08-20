@@ -34,8 +34,15 @@ select
     '{{ var("as_of") }}'::timestamp                    as as_of,
     'ctl.scrm.procurement.entity-list-screening'       as control_id,
     m.supplier_id                                      as subject_id,
-    (m.hit_authority is null
-        and m.last_screened_at >= (select newest_edition_at from current_edition)) as passing,
+    -- coalesce, because SQL three-valued logic is a trap here: a supplier that has NEVER been
+    -- screened has last_screened_at = NULL, the comparison yields NULL rather than false, and an
+    -- unwrapped NULL reads as "not failing" downstream. The never-screened supplier is precisely
+    -- the one this control exists to catch, so it must resolve to false explicitly.
+    coalesce(
+        m.hit_authority is null
+            and m.last_screened_at >= (select newest_edition_at from current_edition),
+        false
+    ) as passing,
     case
         when m.hit_authority = 'entity_list_1260h' then 'listed_on_1260h'
         when m.hit_authority = 'fasc_order'        then 'subject_to_fasc_order'

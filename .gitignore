@@ -15,3 +15,9 @@ reference/supplier-master.yaml
 # NIST's oscal-cli is bootstrapped from Maven Central by the `oscal` npm package at CI time and
 # writes SARIF logs beside the checkout. Neither is ours to commit.
 oscal-cli-sarif-log-*.json
+
+# One organisation description, not a shared artifact. Create it with `npm run init`.
+ccp.config.yaml
+inbox/*
+!inbox/.gitkeep
+.warehouse/

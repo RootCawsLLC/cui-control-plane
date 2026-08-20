@@ -1,0 +1,9 @@
+supplier_id,legal_name,country_of_incorporation,relationship_status,handles_cui,parent_supplier_id,last_screened_at
+SUP-0001,Atlantic Machining LLC,US,active,true,,2026-08-01
+SUP-0002,Beacon Composites Inc,US,active,true,,2026-08-01
+SUP-0003,Cardinal Fasteners Corp,US,active,false,,2026-08-01
+SUP-0004,Delta Precision Ltd,GB,active,false,,2026-08-01
+SUP-0005,Hytera Communications Corporation,CN,active,false,,2026-08-01
+SUP-0006,Everest Logistics LLC,US,pipeline,false,,
+SUP-0007,Foxfire Electronics Inc,US,active,true,,
+SUP-0008,Granite Tooling Company,US,active,false,,2026-05-01

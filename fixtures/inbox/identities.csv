@@ -1,0 +1,13 @@
+user_id,login,status,user_type,factor_count,strongest_factor_type,policy_exemptions,is_break_glass,created_at,last_updated_at
+u_1001,alice@example.mil,active,human,2,webauthn,,false,2025-02-11,2026-07-02
+u_1002,bob@example.mil,active,human,2,webauthn,,false,2025-02-11,2026-07-02
+u_1003,carol@example.mil,active,human,1,piv_cac,,false,2025-03-01,2026-06-18
+u_1004,dan@example.mil,active,human,0,,,false,2025-04-19,2026-08-01
+u_1005,erin@example.mil,active,human,0,,,false,2025-04-19,2026-08-14
+u_1006,frank@example.mil,active,human,1,sms,,false,2025-05-02,2026-05-02
+u_1007,grace@example.mil,active,human,2,webauthn,legacy-auth-exempt,false,2025-05-20,2026-08-16
+u_1008,heidi@example.mil,active,human,2,webauthn,,false,2025-06-01,2026-06-01
+u_1009,ivan@example.mil,active,human,1,piv_cac,,false,2025-06-11,2026-06-11
+u_1010,judy@example.mil,disabled,human,0,,,false,2025-01-05,2026-02-02
+u_bg01,breakglass1@example.mil,active,human,0,,,true,2025-01-01,2025-01-01
+u_bg02,breakglass2@example.mil,active,human,0,,,true,2025-01-01,2025-01-01

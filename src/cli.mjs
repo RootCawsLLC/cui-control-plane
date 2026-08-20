@@ -10,6 +10,10 @@ import { score, formatScore, UnverifiedWeights } from './sprs.mjs';
 import { variance, formatVariance } from './variance.mjs';
 import { policy, formatPolicy } from './policy.mjs';
 import { representation889, formatRepresentation } from './representation.mjs';
+import { loadConfig, ConfigError } from './config.mjs';
+import { init } from './init.mjs';
+import { doctor, formatDoctor, writeTemplates } from './doctor.mjs';
+import { runPipeline, formatPipeline } from './pipeline.mjs';
 import { serialize } from './oscal/common.mjs';
 import { catalog, profiles } from './oscal/catalog.mjs';
 import { componentDefinition } from './oscal/component-definition.mjs';
@@ -19,6 +23,10 @@ import { ssp } from './oscal/ssp.mjs';
 import { assessmentPlan } from './oscal/assessment-plan.mjs';
 
 const USAGE = `ccp - CUI control plane
+
+  ccp init                        interview -> ccp.config.yaml (start here)
+  ccp doctor                      what is configured, what is missing, what will run
+  ccp pipeline  [--fixture]       collect -> load -> build -> assert, writing .evidence/
 
   ccp validate                    schema + house rules over controls/ and models/
   ccp coverage                    which of the 110 requirements have a control
@@ -38,11 +46,44 @@ function arg(argv, name, fallback) {
   return i === -1 ? fallback : argv[i + 1];
 }
 
-function main(argv) {
+async function main(argv) {
   const [command, sub] = argv;
 
   if (!command || command === 'help' || command === '--help') {
     process.stdout.write(USAGE);
+    return 0;
+  }
+
+  if (command === 'init') {
+    return init({ force: argv.includes('--force') });
+  }
+
+  if (command === 'doctor') {
+    if (argv.includes('--templates')) {
+      const written = writeTemplates();
+      console.log('Wrote header-only CSV templates:');
+      for (const w of written) console.log('  ' + w);
+      console.log('');
+      console.log('Fill in the ones you can, rename to match ccp.config.yaml, then re-run the pipeline.');
+      return 0;
+    }
+    const report = doctor();
+    console.log(formatDoctor(report));
+    return report.blocking > 0 ? 1 : 0;
+  }
+
+  if (command === 'pipeline') {
+    const config = loadConfig();
+    if (config._usingExample) {
+      console.log('Using the bundled example config - no ccp.config.yaml yet.');
+      console.log('Run `npm run init` to make it yours. Nothing below touches a real system.');
+      console.log('');
+    }
+    const fixture = argv.includes('--fixture') || config._usingExample;
+    console.log(fixture ? 'Collecting (FIXTURE MODE - no real system is contacted):' : 'Collecting:');
+    const result = await runPipeline({ config, fixture });
+    console.log('');
+    console.log(formatPipeline(result));
     return 0;
   }
 
@@ -166,7 +207,19 @@ function main(argv) {
 
 // The naive `file://${argv[1]}` comparison silently no-ops on Windows (three-slash URL).
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  process.exit(main(process.argv.slice(2)));
+  main(process.argv.slice(2)).then(
+    (code) => process.exit(code),
+    (err) => {
+      // A config problem is a setup mistake, not a crash. Print the guidance and nothing else -
+      // a stack trace here teaches the analyst that the tool is broken rather than unconfigured.
+      if (err instanceof ConfigError) {
+        console.error(err.message);
+        process.exit(1);
+      }
+      console.error(err.stack ?? err.message);
+      process.exit(1);
+    }
+  );
 }
 
 export { main };

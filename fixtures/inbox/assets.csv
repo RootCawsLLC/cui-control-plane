@@ -1,0 +1,9 @@
+asset_id,asset_type,owner,classification,in_cui_boundary
+vm-enclave-app-01,virtual-machine,platform-team,cui,true
+vm-enclave-app-02,virtual-machine,platform-team,cui,true
+vm-enclave-db-01,database,data-team,cui,true
+st-enclave-artifacts,storage-account,platform-team,cui,true
+st-enclave-scratch,storage-account,platform-team,,true
+kv-enclave-secrets,key-vault,security-engineering,cui,true
+vm-enclave-build-01,virtual-machine,,cui,true
+law-enclave-logs,log-analytics,security-engineering,cui,true

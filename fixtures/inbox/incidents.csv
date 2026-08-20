@@ -1,0 +1,4 @@
+incident_id,opened_at,discovered_at,occurred_at,occurred_at_basis,triage_started_at,affects_covered_contractor_system,affects_cui,reportable_classification,classification_basis,system_image_preserved_until,malware_isolated
+INC-2026-0388,2026-07-02T08:00:00Z,2026-07-02T07:30:00Z,2026-07-01T22:10:00Z,source_system,2026-07-02T08:15:00Z,true,true,reportable,CUI enclave host beaconing to unknown host,2026-10-05T00:00:00Z,false
+INC-2026-0402,2026-07-14T13:00:00Z,2026-07-14T12:40:00Z,,equals_detected,2026-07-14T13:10:00Z,true,false,not_reportable,Phishing attempt blocked at gateway; no covered system touched,2026-10-16T00:00:00Z,false
+INC-2026-0417,2026-07-19T09:00:00Z,2026-07-19T08:30:00Z,2026-07-16T02:11:00Z,source_system,2026-07-19T10:05:00Z,true,true,reportable,Credential reuse against enclave IdP,2026-10-21T00:00:00Z,true

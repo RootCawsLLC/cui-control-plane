@@ -1,0 +1,11 @@
+component_id,parent_asset_id,component_type,manufacturer_raw,is_substantial_or_essential,source_of_record
+CMP-0001,vm-enclave-app-01,nic,Intel Corporation,true,hbom
+CMP-0002,vm-enclave-app-01,tpm,Infineon Technologies,true,hbom
+CMP-0003,vm-enclave-app-02,nic,Intel Corporation,true,hbom
+CMP-0004,vm-enclave-db-01,hba,Broadcom Inc,true,hbom
+CMP-0005,law-enclave-logs,switch,Cisco Systems,true,hbom
+CMP-0006,vm-enclave-build-01,camera,Hangzhou Hikvision Digital Technology Company,true,hbom
+CMP-0007,vm-enclave-build-01,switch,,true,refurb-chassis
+CMP-0008,vm-enclave-build-01,nic,,true,refurb-chassis
+CMP-0009,vm-enclave-build-01,psu,,true,refurb-chassis
+CMP-0010,kv-enclave-secrets,hsm,Thales Group,true,hbom

@@ -1,0 +1,52 @@
+# Bundled example. Used automatically when no ccp.config.yaml exists, so a fresh clone runs.
+#
+# Everything here points at bundled fixtures. It cannot read a real system, which is deliberate:
+# the first run must never touch production by accident.
+#
+# Make it yours with `npm run init`, which writes ccp.config.yaml (gitignored).
+
+organization:
+  name: "Example Defense Systems"
+  cage_code: "0EX01"
+  affirming_official: "unassigned - a named person is required before any SPRS affirmation"
+
+boundary:
+  approach: enclave
+  name: "CUI enclave"
+
+identity:
+  provider: csv
+  csv_path: "inbox/identities.csv"
+  cloud_environment: usgov
+  break_glass_attribute: "extensionAttribute1"
+  break_glass_value: "break-glass"
+
+cloud:
+  provider: csv
+  csv_path: "inbox/assets.csv"
+
+procurement:
+  source: csv
+  supplier_master_path: "inbox/suppliers.csv"
+
+inventory:
+  source: csv
+  components_path: "inbox/components.csv"
+
+incident_response:
+  source: csv
+  incidents_path: "inbox/incidents.csv"
+  submissions_path: "inbox/dibnet-submissions.csv"
+
+reference:
+  entity_list_1260h_path: "inbox/entity-list-1260h.csv"
+  fasc_orders_path: "inbox/fasc-orders.csv"
+  covered_telecom_path: "reference/covered-telecom.seed.csv"
+
+warehouse:
+  engine: duckdb
+  path: ".warehouse/ccp.duckdb"
+
+evidence:
+  path: ".evidence"
+  retain_days: 400

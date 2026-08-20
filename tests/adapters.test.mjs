@@ -130,15 +130,30 @@ test('a missing region is refused rather than defaulted to a commercial one', as
   assert.equal(r.rows.length, 0);
 });
 
-test('a missing AWS SDK is an unavailable population, not a crash and not an empty one', async () => {
+test('AWS never returns a complete-but-empty population, whatever is missing', async () => {
+  // Deliberately asserts the CONTRACT rather than the machine's state: the SDK is an optional
+  // dependency, so whether it is installed differs between a developer's box and CI, and a test
+  // that depends on that passes or fails for reasons that have nothing to do with the code.
+  //
+  // The invariant that matters in every one of those environments: a missing SDK, absent
+  // credentials, or a Config query failure must all produce an UNAVAILABLE population - never a
+  // clean empty one, which would read as "no resources, nothing failing".
   const r = await collectAws({
     config: { cloud: { provider: 'aws-govcloud', region: 'us-gov-west-1' } },
     collectedAt: AT,
   });
-  // The SDK is an optional dependency and is not installed here, which is the point of the test.
-  assert.equal(r.unavailable, true);
-  assert.equal(r.population.complete, false);
-  assert.match(r.population.reconciliation, /@aws-sdk\/client-config-service/);
+
+  if (r.rows.length === 0) {
+    assert.equal(r.unavailable, true, 'zero rows must be reported as unavailable, never as complete');
+    assert.equal(r.population.complete, false);
+    assert.match(
+      r.population.reconciliation,
+      /@aws-sdk\/client-config-service|AWS Config query failed/,
+      'the reason must name the SDK or the query failure'
+    );
+  } else {
+    assert.equal(r.population.complete, true);
+  }
 });
 
 // ---------------------------------------------------------------------------------------------

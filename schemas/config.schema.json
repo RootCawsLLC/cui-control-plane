@@ -159,6 +159,16 @@
         "aggregator": {
           "description": "AWS Config aggregator name. With one, a single query spans every declared account; without one, only the account the ambient credential belongs to is read - and the collector says so rather than implying it covered them all.",
           "type": "string"
+        },
+        "owner_tag": {
+          "description": "Tag key carrying the asset owner. Defaults to 'owner'. Real estates use Owner, owner, team, CostCenter - a hardcoded key silently reports every correctly-tagged resource as unowned.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9 _.:/=+@-]{1,128}$"
+        },
+        "classification_tag": {
+          "description": "Tag key carrying the data classification. Defaults to 'data_classification'.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9 _.:/=+@-]{1,128}$"
         }
       }
     },

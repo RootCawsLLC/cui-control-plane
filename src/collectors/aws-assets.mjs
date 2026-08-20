@@ -65,13 +65,13 @@ export function readTag(tags, name) {
 }
 
 /** Pure grading over parsed Config results. Unit-testable with no AWS account. */
-export function grade({ results, collectedAt }) {
+export function grade({ results, collectedAt, ownerTag = 'owner', classificationTag = 'data_classification' }) {
   return results.map((r) => ({
     snapshot_at: collectedAt,
     resource_id: r.resourceId,
     resource_type: r.resourceType ?? null,
-    owner_tag: readTag(r.tags, 'owner'),
-    data_classification_tag: readTag(r.tags, 'data_classification'),
+    owner_tag: readTag(r.tags, ownerTag),
+    data_classification_tag: readTag(r.tags, classificationTag),
     subscription_id: r.accountId ?? null,
     location: r.awsRegion ?? null,
   }));
@@ -90,7 +90,7 @@ export async function collect({ config, collectedAt, fixture = false }) {
     const data = JSON.parse(readFileSync(repoPath('fixtures', 'collectors', `${FIXTURE}.json`), 'utf8'));
     return {
       table: TABLE,
-      rows: grade({ results: data.results, collectedAt }),
+      rows: grade({ results: data.results, collectedAt, ownerTag: config.cloud?.owner_tag, classificationTag: config.cloud?.classification_tag }),
       population: {
         expected: data.results.length,
         examined: data.results.length,
@@ -143,7 +143,7 @@ export async function collect({ config, collectedAt, fixture = false }) {
     return unavailable(`AWS Config query failed: ${err.name ?? 'Error'} - ${err.message}`);
   }
 
-  const rows = grade({ results, collectedAt });
+  const rows = grade({ results, collectedAt, ownerTag: config.cloud?.owner_tag, classificationTag: config.cloud?.classification_tag });
   const declared = config.cloud?.accounts ?? [];
   const seen = new Set(rows.map((r) => r.subscription_id).filter(Boolean));
 

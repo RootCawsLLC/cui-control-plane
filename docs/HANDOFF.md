@@ -48,9 +48,21 @@ paging and PENDING_ACTIVATION factors, all three of AWS Config's tag shapes, Ent
 the registration report. But recorded shapes are not the same as a real response, and the first live
 run of any collector should be treated as a test of the collector, not of the organisation.
 
-The AWS one specifically could have been smoke-tested against the lab account and was not: the
-`grc-smoke` SSO token had expired and refreshing it needs a browser. `aws sso login --profile
-grc-smoke` then `npm run pipeline` is the check that is owed.
+**Except AWS, which has now been run live** against lab account 445817184167 (us-east-1, 2026-08-20).
+82 resources across 29 types, Config enabled, paging and population reconciliation all behaved. Two
+things came out of it:
+
+- The tag parser handles the real Config shape - a list of `{tag, key, value}` objects, which is a
+  fourth shape beyond the three the fixture covers. Verified by extracting a tag that was actually
+  present rather than by assuming the nulls meant untagged.
+- **Tag KEYS were hardcoded to `owner` / `data_classification`.** Against an account that tags
+  everything with `Project` / `Environment` / `ManagedBy` / `ComplianceScope`, that produced 82
+  of 82 unowned - one config mistake wearing the costume of 82 findings. Now `cloud.owner_tag` and
+  `cloud.classification_tag`, with the pipeline warning when an entire estate misses the key.
+
+Refreshing the lab session non-interactively: `aws sso login --profile grc-smoke --use-device-code
+--no-browser` prints a code completable from any device. Plain `--no-browser` uses a localhost
+redirect on CLI v2.36 and only works from a browser on that machine.
 
 **Every `cost` block is empty**, and `intended_efficacy` / `coverage` with it — see watch item 10.
 Cost moves by an order of magnitude on the Phase 0 boundary decision, and the two efficacy

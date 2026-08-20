@@ -45,6 +45,18 @@ export async function runPipeline({
         ? `UNAVAILABLE - ${result.population.reconciliation}`
         : `${result.rows.length} row(s)`;
       log(`  ${c.name.padEnd(28)} ${state}`);
+
+      // A whole estate with no owner tag is almost always the wrong tag KEY, not universal
+      // non-compliance. Saying so turns 82 findings back into one configuration line - this was
+      // found by pointing the AWS collector at a real account that tags everything, just not with
+      // the words this tool assumed.
+      const tagged = result.rows.filter((r) => r.owner_tag).length;
+      if (result.rows.length >= 5 && tagged === 0 && 'owner_tag' in (result.rows[0] ?? {})) {
+        log(
+          `  ${''.padEnd(28)} NOTE: 0 of ${result.rows.length} carry the '${config.cloud?.owner_tag ?? 'owner'}' tag. ` +
+            'Check cloud.owner_tag matches your tagging convention before treating these as findings.'
+        );
+      }
     } catch (err) {
       // A collector that throws is a broken run, not an empty population. It is recorded as
       // unavailable so every control over its table is withheld rather than passing vacuously.

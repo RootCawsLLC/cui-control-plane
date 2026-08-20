@@ -189,6 +189,11 @@ Install the optional SDK and use your normal AWS credential chain (profile, envi
 npm install @aws-sdk/client-config-service
 ```
 
+Set `cloud.owner_tag` and `cloud.classification_tag` to whatever your estate actually uses. This
+was found the hard way: pointed at a real account that tags everything with `Project`,
+`Environment`, `ManagedBy` and `ComplianceScope`, the collector reported 82 of 82 resources
+unowned. That is one configuration line, not 82 findings, and the pipeline now says so on the run.
+
 It reads **AWS Config**, not the Tagging API — the Tagging API only returns taggable resources, and
 holes in the boundary inventory are holes in the denominator every other CUI-scoped control depends
 on. Config needs to be enabled, which it needs to be for CMMC regardless.
@@ -223,6 +228,7 @@ Ordered by how soon it will bite you.
 | CUI boundary | `ccp.config.yaml` → `boundary` | Decision, not a setting |
 | Sources | `ccp.config.yaml` → `identity`, `cloud`, `procurement`, `inventory`, `incident_response` | Start CSV, upgrade to API |
 | Government endpoints | `identity.cloud_environment`, `identity.org_url`, `cloud.region` | GCC High, okta-gov.com and GovCloud all use different hosts or partitions |
+| **Asset tag keys** | `cloud.owner_tag`, `cloud.classification_tag` | Defaults are `owner` / `data_classification`. **Check these first** if the inventory reports everything unowned - it is usually the wrong tag key, not universal non-compliance |
 | 1260H list | `inbox/entity-list-1260h.csv` | Refresh on a schedule |
 | §889 manufacturers | `reference/covered-telecom.seed.csv` | Statutory five plus your affiliates |
 | Phishing-resistant methods | `identity.phishing_resistant_methods` | Policy decision. Default excludes SMS and push |

@@ -121,6 +121,13 @@ function withDefaults(config) {
       covered_telecom_path: 'reference/covered-telecom.seed.csv',
       ...config.reference,
     },
+    cloud: {
+      // Tag keys are an organisational convention. Hardcoding them made a live run report 82 of 82
+      // resources unowned against an account that tags everything - just not with these words.
+      owner_tag: 'owner',
+      classification_tag: 'data_classification',
+      ...config.cloud,
+    },
     warehouse: { path: '.warehouse/ccp.duckdb', ...config.warehouse },
     evidence: { path: '.evidence', retain_days: 400, ...config.evidence },
   };

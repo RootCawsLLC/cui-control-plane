@@ -96,7 +96,10 @@ export async function collect({ config, collectedAt, fixture = false }) {
     token,
     cloudEnvironment: config.identity.cloud_environment,
     subscriptions,
-    query: QUERY,
+    query: buildQuery({
+      ownerTag: config.cloud?.owner_tag,
+      classificationTag: config.cloud?.classification_tag,
+    }),
   });
 
   const rows = grade({ resources, collectedAt });

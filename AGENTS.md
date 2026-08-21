@@ -43,6 +43,12 @@ crash, so the shell must not expand the pattern. Node >= 22.
    unresolved affiliate: all fail, all stay in the denominator.
 6. **Fixture evidence stamps every artifact generated from it**, and the stamp is set from the data,
    not passed in. Never commit real evidence to this repository.
+7. **Synthetic and real evidence never share a directory.** `--fixture` runs write to a `fixture/`
+   subdirectory of `evidence.path`, derived rather than configured. Two things went wrong while
+   they shared one: a demo overwrote the real assertion file for that date, and — quietly, which
+   was worse — prior-evidence reads dated real findings from synthetic snapshots, emitting
+   fabricated variance duration unstamped at confidence tier 4. Reads filter on the stamp and
+   writes refuse to cross it; do not route around either to make a demo simpler.
 
 ## Control records (ADR 0001, ADR 0002)
 

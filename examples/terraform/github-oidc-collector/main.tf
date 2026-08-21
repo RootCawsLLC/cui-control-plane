@@ -171,18 +171,28 @@ data "aws_iam_policy_document" "collect" {
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
-      values   = ["${var.evidence_prefix}/*", var.evidence_prefix, "${var.config_prefix}/*", var.config_prefix]
+      values = [
+        "${var.evidence_prefix}/*", var.evidence_prefix,
+        "${var.config_prefix}/*", var.config_prefix,
+        "${var.inputs_prefix}/*", var.inputs_prefix,
+      ]
     }
   }
 
   # The organisation config lives beside the evidence rather than in the repository: it names one
   # account's boundary and systems, and this repository is public. READ ONLY - a collection run has
   # no business rewriting the definition of what it is collecting.
+  # Config AND the flat-file inputs it points at. A CSV export from procurement or a CMDB is org
+  # data with the same problem as the config: gitignored on purpose, so an unattended run cannot see
+  # it, and a source it cannot see withholds every control over it. Read only.
   statement {
-    sid       = "ConfigRead"
-    effect    = "Allow"
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.evidence.arn}/${var.config_prefix}/*"]
+    sid     = "ConfigRead"
+    effect  = "Allow"
+    actions = ["s3:GetObject"]
+    resources = [
+      "${aws_s3_bucket.evidence.arn}/${var.config_prefix}/*",
+      "${aws_s3_bucket.evidence.arn}/${var.inputs_prefix}/*",
+    ]
   }
 
   statement {

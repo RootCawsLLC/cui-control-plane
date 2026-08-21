@@ -29,7 +29,8 @@
     "representation:889": "node src/cli.mjs representation 889",
     "init": "node src/cli.mjs init",
     "doctor": "node src/cli.mjs doctor",
-    "pipeline": "node src/cli.mjs pipeline"
+    "pipeline": "node src/cli.mjs pipeline",
+    "cmdb:from-tfstate": "node scripts/tfstate-to-cmdb.mjs"
   },
   "dependencies": {
     "ajv": "^8.17.1",

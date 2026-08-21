@@ -21,3 +21,14 @@ ccp.config.yaml
 inbox/*
 !inbox/.gitkeep
 .warehouse/
+
+# Terraform: lab-specific backend/vars and local state never go in a public repo.
+examples/terraform/**/.terraform/
+examples/terraform/**/.terraform.lock.hcl
+examples/terraform/**/*.tfstate
+examples/terraform/**/*.tfstate.*
+examples/terraform/**/backend.hcl
+examples/terraform/**/*.auto.tfvars
+# Saved plans can embed resource values and are environment-specific.
+examples/terraform/**/tfplan
+examples/terraform/**/*.tfplan

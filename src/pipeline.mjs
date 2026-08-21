@@ -93,12 +93,13 @@ export async function runPipeline({
   // A table nobody collected is not an empty population, it is an unknown one. Without this, a
   // control whose source has no collector at all asserts 0 of 0 passing - a vacuous pass, and the
   // single most dangerous output this tool could produce.
-  const collectedTables = new Set(
-    collected.filter((c) => !c.unavailable && c.population?.complete !== false).map((c) => c.table)
-  );
+  // Attempted, not complete. A collector that ran and produced a real population but flagged it
+  // insufficient has ALREADY contributed its reason above; saying "no collector populated" on top of
+  // that is simply false and sends the analyst looking for a collector that exists.
+  const attemptedTables = new Set(collected.filter((c) => !c.unavailable).map((c) => c.table));
   for (const control of controls) {
     const sources = populationTablesFor(control.control_id);
-    const present = sources.filter((table) => collectedTables.has(table));
+    const present = sources.filter((table) => attemptedTables.has(table));
     if (sources.length > 0 && present.length === 0) {
       unusable.set(control.control_id, [
         ...(unusable.get(control.control_id) ?? []),

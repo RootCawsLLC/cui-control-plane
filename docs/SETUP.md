@@ -104,7 +104,7 @@ and affiliates are in scope too. Add yours.
 
 ## Step 4 — Wire your first real source
 
-Five paths. Do **A** today; do the one that matches your stack this week.
+Six paths. Do **A** today; do the one that matches your stack this week.
 
 ### Path A — CSV exports (works everywhere, no credentials)
 
@@ -227,6 +227,29 @@ you only touch `identity.phishing_resistant_methods` if your policy differs.
 **Only ACTIVE factors count.** An Okta enrolment can sit in `PENDING_ACTIVATION` indefinitely, and
 counting it is how an MFA rollout reports full coverage while part of the population still signs in
 with a password.
+
+### Path F — AWS Identity Center (the federated workforce)
+
+Set `identity.provider: aws-identity-center`. Standard AWS credential chain; no extra secrets.
+Permissions: `sso:ListInstances`, `identitystore:ListUsers`, and `identitystore:ListGroups` +
+`ListGroupMemberships` only if you set `break_glass_group`.
+
+**This is the right population in a federated account** — where people sign in through Identity
+Center and assume roles, your IAM users are service principals and your humans are in the Identity
+Store. Path E measures the wrong set there.
+
+**It cannot establish MFA, and it says so rather than guessing.** Identity Center exposes no
+per-user MFA enrolment through any public API — verified against the SDK, not assumed. So the
+collector reports the workforce population as established but insufficient for the MFA control,
+which is withheld with that reason attached. It deliberately does not emit `factor_count: 0`,
+because that asserts "no MFA enrolled" when the truth is "unknowable from here", and the resulting
+finding would be indistinguishable from a real one in your POA&M.
+
+Two real ways to close it, both named in the output:
+
+- **Federate to an external IdP** and collect MFA there (`identity.provider: entra` or `okta`).
+- **Carry a documented manual attestation** on a defined cadence. Legitimate evidence, so long as
+  nobody pretends it is continuous.
 
 ### Path E — AWS IAM users (single account, no federation)
 

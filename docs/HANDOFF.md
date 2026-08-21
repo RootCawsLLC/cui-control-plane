@@ -3,11 +3,12 @@
 Point-in-time state. The durable decisions are in [adr/](adr/); this file is what is done, what is
 next, and what is deliberately unresolved.
 
-**As of 2026-08-19.**
+**As of 2026-08-21.**
 
 ## What works
 
-The spine runs end to end against synthetic evidence: `npm run demo` walks it.
+The spine runs end to end **against a real AWS account, unattended, on a schedule**. `npm run demo`
+still walks it on synthetic evidence for anyone without credentials.
 
 - **Six control records** validate against schema plus eleven house rules. `npm run validate`.
 - **The requirement index** — 110 identifiers across 14 families, generated and diff-checked.
@@ -26,7 +27,20 @@ The spine runs end to end against synthetic evidence: `npm run demo` walks it.
 - **`ccp policy`** — generates nothing today and says why, naming every control it skipped.
 - **`ccp representation 889`** — refuses while three components are unresolved.
 - **SPRS derivation** — and its refusal path.
-- **86 tests passing**, including the guard suite that proves each house rule actually fires, the
+- **A runnable tool, not just an architecture.** `ccp init` interviews, `ccp doctor` answers "am I
+  set up yet" and names which controls will be withheld and why, `ccp pipeline` collects, builds a
+  local DuckDB warehouse and writes assertion records. No Python: the models stay dbt-compatible and
+  run through a local shim, because requiring a Python toolchain is where this dies in a real org.
+- **Collectors** — Entra ID, Okta, AWS Identity Center, AWS IAM, Azure Resource Graph, AWS Config,
+  and CSV for everything else. The AWS SDKs are optionalDependencies, so a non-AWS deployment carries
+  nothing it does not use.
+- **Unattended collection.** `.github/workflows/collect-evidence.yml` runs at 06:17 UTC daily,
+  assumes a read-only role via GitHub OIDC, fetches the org config and flat-file inputs from a
+  private bucket, restores prior evidence, collects, and persists the snapshot. No human ever types a
+  device code. `examples/terraform/github-oidc-collector` is the IaC for the role and bucket.
+- **AWS Config as Terraform**, in `examples/terraform/aws-config`, because the collector refusing a
+  dead recorder only helps if something keeps the recorder alive.
+- **214 tests passing**, including the guard suite that proves each house rule actually fires, the
   reference tests pinning the cross-document UUID shapes NIST's validator rejected, and the
   variance tests covering censoring, saturation and small-sample extrapolation.
 
@@ -94,13 +108,18 @@ What remains needs one of those three, which is why the list is short and why no
 
 1. **Make the Phase 0 boundary decision.** Everything downstream is shaped by enclave vs.
    enterprise, and two controls are explicitly unpriced pending it. **Blocking, and yours.**
-2. **Stand up the landing layer time-indexed.** If it overwrites, `ccp variance` has nothing to
-   walk and the risk half of the argument disappears — this is the load-bearing infrastructure
-   decision, not the warehouse brand.
-3. **Run `ctl.cui.boundary.asset-inventory` for real.** It is the denominator; nothing downstream
-   means anything until its population is trustworthy. Expect the denominator itself to move for a
-   while, and treat that movement as the finding.
-4. **Then `ctl.iam.cui-enclave.mfa`.** One system, one control, one cycle, then compound.
+2. **Wait for the second calendar day.** `ctl.cui.boundary.asset-inventory` is running for real
+   and persisting snapshots, but evidence filenames are date-granular, so every run on one day
+   collapses into a single snapshot. VF/VD becomes computable on the first run of a second day.
+   Read the first few days as calibration: the denominator moved 82 → 138 → 172 while AWS Config
+   completed its initial discovery sweep, and that movement is the recorder settling, not control
+   drift.
+3. **Decide how `ctl.iam.cui-enclave.mfa` gets evidenced.** Not a build problem — a decision.
+   Identity Center exposes the workforce but **no per-user MFA state through any public API**
+   (verified against the SDK: no command matching /mfa|device|credential/). Either federate to an
+   external IdP so the Entra or Okta collector supplies it, or carry a documented manual attestation
+   on a defined cadence. The collector states this precisely rather than emitting `factor_count: 0`,
+   which would be a fabricated finding.
 5. **Settle watch items 1 and 2** — the SPRS weight table and the non-POA&M-able subset. Both are
    primary-source reads, neither is large, and both currently block a real assessment package.
 6. **Populate the inventory toward the 110.** `npm run coverage` prints the backlog, enumerated.
@@ -119,12 +138,18 @@ Two smaller things that are code and were deliberately left:
 
 ## Open questions nobody has answered yet
 
-- **Does an enclave CMDB exist today?** The plan says that if nothing inventories the boundary, that
-  is itself the Phase 0 deliverable rather than a Phase 2 assumption. Unknown here.
-- **Which IdP, and is the enclave tenant genuinely separate?** The whole layer split assumes it is.
-  If enclave and corporate identity share a tenant, the split is still right conceptually but the
-  populations get much harder to separate cleanly, and `is_break_glass` needs a real attribute
-  rather than the assumed one.
+- ~~**Does an enclave CMDB exist today?**~~ **Answered for the lab, and the answer generalises.**
+  No CMDB existed, and the tempting fix — exporting one from the cloud API — would have made the
+  control compare a source to itself and pass 100% forever. Terraform state is a genuinely
+  independent record: what was *declared*, against what *exists*. `npm run cmdb:from-tfstate`
+  extracts it, identity fields only, and refuses to write if anything looks like credential
+  material. Still open for a real engagement: most estates are not fully IaC-managed, and whatever
+  is outside Terraform is outside this CMDB too.
+- ~~**Which IdP, and is the enclave tenant genuinely separate?**~~ **Partly answered.** In a
+  federated account the IAM users are service principals and legacy accounts, not the workforce —
+  the lab's five IAM users reduced to one non-human principal once root and automation were
+  excluded. The workforce lives in Identity Center. `is_break_glass` there is a GROUP membership,
+  not an attribute, because Identity Center has no arbitrary user attributes to hang it on.
 - **Who owns the supplier master?** Two controls read from it and neither owns it. Unowned shared
   datasets drift.
 - **Is `remediation_started_at` reachable?** It is not derivable from snapshot history — nothing in
@@ -153,6 +178,32 @@ all-FAILURE status; `stalenessDays()` refuses when the newest item is past
 collector reading a system that can be switched off while still serving cached answers needs the
 same check. Entra and Okta return errors when disabled, so they are lower risk - but that is a
 property worth confirming per source rather than assuming.
+
+## The fixture lesson, recorded because every guard worked and the output was still worthless
+
+The first unattended run of `collect-evidence.yml` went **green**, reported controls asserted, and
+would have persisted the snapshot had it not been a dry run. It had collected **12 fixture
+identities** and zero real ones.
+
+Nothing malfunctioned. `ccp.config.yaml` is gitignored - correctly, it describes one account's
+boundary and belongs in that account's storage, not a public repository - so the CI checkout had no
+config and fell back to the bundled example, which reads only synthetic data. The pipeline then did
+exactly what it should: it collected honestly from the sources it was pointed at, stamped every
+assertion `fixture: true`, and reported success.
+
+**Every safety rail behaved perfectly. The output was still worthless.** That is the failure mode
+worth fearing, and it is not detectable by any check that asks "did this run correctly" - only by one
+that asks "did this run against what I meant".
+
+Two guards now, deliberately at different layers. `ccp pipeline --require-real` exits 2 if any
+assertion carries the fixture stamp, so anyone scheduling this tool inherits the protection rather
+than having to remember the workflow trick. The workflow additionally greps `.evidence` for
+`"fixture": true` before persisting, because once synthetic data is in a real history every duration
+computed from it is wrong and nothing in the numbers reveals it.
+
+**The generalisable rule: a fallback that makes a tool work locally can make it lie remotely.**
+Any default that silently substitutes for missing configuration needs to be loud when the
+consequence is data rather than convenience.
 
 ## Known rough edges
 

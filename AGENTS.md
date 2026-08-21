@@ -49,6 +49,13 @@ crash, so the shell must not expand the pattern. Node >= 22.
    was worse — prior-evidence reads dated real findings from synthetic snapshots, emitting
    fabricated variance duration unstamped at confidence tier 4. Reads filter on the stamp and
    writes refuse to cross it; do not route around either to make a demo simpler.
+8. **Near-zero overlap between reconciling sources is a source error, not a finding.** Tables that
+   are independent views of the same estate declare each other in `reconciles_with`, and the
+   pipeline reports a pair that shares almost no identifiers. Declared rather than inferred,
+   because "these two should overlap" is invisible in the data: DIBNet submissions are a
+   deliberate subset of incidents, and managed endpoints share nothing with cloud resources.
+   The lab case that motivated it read as 81 unmanaged assets and 68 unclassified ones; the two
+   inputs shared one identifier out of 68 and were simply not about each other.
 
 ## Control records (ADR 0001, ADR 0002)
 

@@ -156,6 +156,7 @@ export async function runPipeline({
         'That is usually a missing source or a misconfigured key rather than uniform non-compliance.'
     );
   }
+  notes.push(...reconciliationNotes(collected));
   for (const n of notes) log(`  NOTE: ${n}`);
 
   // --- write ----------------------------------------------------------------------------------
@@ -278,6 +279,85 @@ function varianceFor(row, history, subjectId, asOf) {
     remediation_completed_at: row.remediation_completed_at ? new Date(row.remediation_completed_at).toISOString() : null,
     started_at_basis: started ? (row.started_at_basis ?? 'source_system') : 'equals_detected',
   };
+}
+
+/**
+ * Below this, two sources that are supposed to describe one estate are treated as describing two.
+ *
+ * Expressed against the SMALLER source, not the union: a CMDB tracking 68 things inside an account
+ * that reports 82 should recognise most of its own 68. Using the union would let a large, mostly
+ * irrelevant cloud population mask a CMDB that matches nothing.
+ *
+ * Five per cent is a convention rather than a measurement, and deliberately near-zero. Real
+ * estates overlap only partially - a cloud account is full of IAM roles and provider-managed
+ * resources no CMDB tracks - so a high threshold would fire constantly and be switched off. The
+ * signal worth having is "these two have essentially nothing in common", which is not a compliance
+ * finding at all.
+ */
+export const MIN_RECONCILIATION_OVERLAP = 0.05;
+
+/**
+ * Below this many members on either side, overlap says nothing and is not reported.
+ *
+ * Three rows sharing none of their identifiers is a coincidence; sixty-eight sharing one is a
+ * different file. Without a floor the guard would fire on every small fixture and teach people to
+ * ignore it.
+ */
+export const MIN_RECONCILIATION_MEMBERS = 10;
+
+/**
+ * Flags reconciling sources that turn out not to describe the same estate.
+ *
+ * THIS EXISTS BECAUSE THE CONTROL COULD NOT TELL THE TWO APART. Against lab account 445817184167,
+ * the asset inventory reported 81 unmanaged assets and 68 unclassified ones - which reads as an
+ * estate in serious disarray. In fact the CMDB export and the cloud query shared exactly ONE
+ * identifier out of 68, because AWS Config had no recorder and was answering from a decommissioned
+ * index while the CMDB described resources that genuinely existed. Both sides were well formed,
+ * both used identical identifier formats, and normalising the join key recovered nothing. The
+ * numbers were not findings about the estate; they were the two inputs not being about each other.
+ *
+ * A note rather than a withholding: the population is established, and the members really are in
+ * it. What is not established is that comparing them means anything, and that belongs in front of
+ * whoever reads the result.
+ */
+export function reconciliationNotes(collected) {
+  const out = [];
+  const usable = collected.filter((c) => !c.unavailable && c.population?.complete !== false);
+  const byTable = new Map(usable.map((c) => [c.table, c]));
+  const seen = new Set();
+
+  for (const c of usable) {
+    for (const other of TABLES[c.table]?.reconciles_with ?? []) {
+      const pairKey = [c.table, other].sort().join('|');
+      if (seen.has(pairKey)) continue;
+      const partner = byTable.get(other);
+      if (!partner) continue; // One side absent is a different problem, already reported as such.
+      seen.add(pairKey);
+
+      const keyA = TABLES[c.table]?.subject_key;
+      const keyB = TABLES[other]?.subject_key;
+      if (!keyA || !keyB) continue;
+
+      const a = new Set(c.rows.map((r) => r[keyA]).filter(Boolean));
+      const b = new Set(partner.rows.map((r) => r[keyB]).filter(Boolean));
+      if (a.size < MIN_RECONCILIATION_MEMBERS || b.size < MIN_RECONCILIATION_MEMBERS) continue;
+
+      let shared = 0;
+      for (const x of a) if (b.has(x)) shared += 1;
+      const ratio = shared / Math.min(a.size, b.size);
+      if (ratio >= MIN_RECONCILIATION_OVERLAP) continue;
+
+      out.push(
+        `${c.name} and ${partner.name} are supposed to be independent views of the same estate, but ` +
+          `share ${shared} of ${Math.min(a.size, b.size)} identifiers ` +
+          `(${c.table}: ${a.size}, ${other}: ${b.size}). They are almost certainly not describing the ` +
+          'same thing - a stale or wrong export, the wrong account or region, or a source that is ' +
+          'not actually reporting. Findings from this reconciliation are not trustworthy until that ' +
+          'is resolved.'
+      );
+    }
+  }
+  return out;
 }
 
 /**

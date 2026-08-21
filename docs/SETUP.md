@@ -161,6 +161,19 @@ neither the CMDB nor the cloud API, and they are where CUI documents actually ge
 whole population fails for one single reason — the signature of a missing source rather than an
 estate in uniform breach.
 
+Both halves being present is not the same as both halves being *about the same estate*. The pipeline
+also compares the two sets of identifiers and says so when they share almost nothing:
+
+> csv-cloud-resources and csv-cmdb-assets are supposed to be independent views of the same estate,
+> but share 1 of 68 identifiers.
+
+That is worth reading carefully, because it does not look like a configuration problem — it looks
+like a catastrophic estate. The run that prompted this check reported 81 unmanaged assets and 68
+unclassified ones against a real account. Both exports were well formed, both used identical
+identifier formats, and normalising the join key recovered nothing: the cloud query was answering
+from a decommissioned index while the CMDB described resources that genuinely existed. When you see
+this note, check the export, the account and the region before you open a single ticket.
+
 ### Path B — Entra ID (continuous, needs an app registration)
 
 This is the one that turns MFA coverage into a live control.

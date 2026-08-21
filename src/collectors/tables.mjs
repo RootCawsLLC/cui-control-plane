@@ -22,6 +22,14 @@
  * Conflating the two made a live run assert the Section 889 control 0 of 0 passing, at confidence
  * tier 4 and with no fixture stamp, purely because the covered-manufacturer list had loaded while
  * the component inventory had not. Only population tables make a control assertable.
+ *
+ * `reconciles_with` names tables that are INDEPENDENT VIEWS OF THE SAME ESTATE, joined on
+ * `subject_key`. It is declared rather than inferred because "these two should overlap" is not
+ * visible in the data: DIBNet submissions are a deliberate subset of incidents, and managed
+ * endpoints legitimately share nothing with cloud resources. Only a genuine reconciliation - two
+ * sources that each claim to enumerate the same things - belongs here, because near-zero overlap
+ * between such a pair means the inputs describe different estates rather than that the estate is
+ * non-compliant.
  */
 
 export const TABLES = {
@@ -64,6 +72,8 @@ export const TABLES = {
     role: 'population',
     describes: 'Assets the CMDB believes are inside the CUI boundary',
     controls: ['ctl.cui.boundary.asset-inventory'],
+    subject_key: 'asset_id',
+    reconciles_with: ['src_cloud_resources'],
     required: ['asset_id'],
     columns: ['snapshot_at', 'asset_id', 'asset_type', 'owner', 'classification', 'in_cui_boundary'],
   },
@@ -71,6 +81,8 @@ export const TABLES = {
     role: 'population',
     describes: 'Resources the cloud provider actually reports in the enclave subscriptions/accounts',
     controls: ['ctl.cui.boundary.asset-inventory'],
+    subject_key: 'resource_id',
+    reconciles_with: ['src_cmdb_assets_snapshot'],
     required: ['resource_id'],
     columns: [
       'snapshot_at',
@@ -86,6 +98,11 @@ export const TABLES = {
     role: 'population',
     describes: 'Managed endpoints enrolled in the enclave',
     controls: ['ctl.cui.boundary.asset-inventory'],
+    subject_key: 'device_id',
+    // Deliberately NOT reconciled against the cloud: laptops are not cloud resources, so zero
+    // overlap there is the normal case and flagging it would be noise. Nor against the CMDB: a
+    // managed endpoint the CMDB has never heard of is a real unmanaged-asset finding, which the
+    // control already reports. Only genuinely independent views of the SAME estate belong below.
     required: ['device_id'],
     columns: ['snapshot_at', 'device_id', 'assigned_user', 'enclave_enrolled', 'agent_last_seen'],
   },

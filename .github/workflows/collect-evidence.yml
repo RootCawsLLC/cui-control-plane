@@ -74,6 +74,17 @@ jobs:
           aws s3 cp "s3://${{ vars.CCP_EVIDENCE_BUCKET }}/config/ccp.config.yaml" ccp.config.yaml
           echo "config fetched: $(wc -l < ccp.config.yaml) lines"
 
+      # The flat-file inputs the config points at - supplier master, CMDB export, incident records.
+      # Gitignored locally for exactly the same reason as the config, so an unattended run cannot see
+      # them, and a source it cannot see WITHHOLDS every control over it. Observed: a run collected
+      # 140 real Config resources and still asserted nothing, because the CMDB export existed only on
+      # a laptop and the asset inventory reconciles across both.
+      - name: Fetch the organisation inputs
+        run: |
+          mkdir -p inbox
+          aws s3 sync "s3://${{ vars.CCP_EVIDENCE_BUCKET }}/inbox" inbox --only-show-errors
+          echo "inputs fetched: $(find inbox -name '*.csv' | wc -l) file(s)"
+
       # Restore history BEFORE collecting. first_observed is resolved against prior snapshots, so a
       # run that starts from an empty .evidence would date every existing failure to today and reset
       # every variance duration to zero.

@@ -77,3 +77,9 @@ variable "config_prefix" {
   type        = string
   default     = "config"
 }
+
+variable "inputs_prefix" {
+  description = "Key prefix holding the flat-file inputs the config references - supplier master, CMDB export, incident records. Gitignored locally for the same reason as the config, so an unattended run has to fetch them from here or the sources come back unavailable."
+  type        = string
+  default     = "inbox"
+}

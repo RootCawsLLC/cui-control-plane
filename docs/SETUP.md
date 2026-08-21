@@ -340,6 +340,7 @@ Ordered by how soon it will bite you.
 | **Config freshness** | `cloud.max_staleness_days` | Default 7. AWS Config answers from its index even when the recorder is deleted, so the collector checks the recorder is running and the newest item is recent, and **withholds** rather than reporting a stale snapshot as current |
 | **Asset tag keys** | `cloud.owner_tag`, `cloud.classification_tag` | Defaults are `owner` / `data_classification`. **Check these first** if the inventory reports everything unowned - it is usually the wrong tag key, not universal non-compliance |
 | 1260H list | `inbox/entity-list-1260h.csv` | Refresh on a schedule |
+| CMDB export | `npm run cmdb:from-tfstate` | See below. Refresh whenever the estate changes |
 | §889 manufacturers | `reference/covered-telecom.seed.csv` | Statutory five plus your affiliates |
 | Phishing-resistant methods | `identity.phishing_resistant_methods` | Policy decision. Default excludes SMS and push |
 | Break-glass accounts | `identity.break_glass_attribute` | An attribute, never a name pattern |
@@ -370,6 +371,36 @@ This is a hook rather than a note because the failure it prevents is invisible t
 sessions shared this checkout on 2026-08-20: a file was rewritten mid-edit under one of them,
 `.evidence/` was emptied between two commands, and a `git add -A` staged another session's
 unfinished work. None of that is a conflict, so nothing warned anybody.
+
+## Refreshing the CMDB export from Terraform state
+
+The asset inventory is a **reconciliation** — what you declared against what the cloud reports — and
+its value is entirely in the disagreement. Generating the CMDB half from the same cloud API that
+supplies the other half makes the control compare a source to itself: a tautology that passes 100%
+forever while measuring nothing.
+
+Terraform state is genuinely independent. A resource in the cloud but absent from state is unmanaged
+drift, which is the finding the control exists for.
+
+```bash
+aws s3 cp s3://<tfstate-bucket>/<key>/terraform.tfstate /tmp/state.json
+npm run cmdb:from-tfstate -- /tmp/state.json inbox/cmdb-assets.csv --owner <project>
+rm /tmp/state.json
+```
+
+**Keep the raw state out of the repository.** A tfstate routinely carries plaintext credentials —
+database passwords, access keys, private keys. The script reads only identity fields (type, name,
+id, arn) and never touches the rest of the attribute bag, and it refuses to write if anything in the
+output looks like an opaque token. Delete the state file when you are done.
+
+`classification` comes out blank on purpose: state says what exists, not how the data is
+classified. Filling it in automatically would invent a classification nobody assigned, and the
+control would pass on it.
+
+For unattended runs the export has to be somewhere CI can read it — see
+`examples/terraform/github-oidc-collector`, which grants the collector role read access to an
+`inbox/` prefix. **Nothing refreshes it for you**; `ccp doctor` warns once it is more than 45 days
+old.
 
 ## Adding a collector
 

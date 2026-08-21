@@ -56,6 +56,10 @@ crash, so the shell must not expand the pattern. Node >= 22.
    deliberate subset of incidents, and managed endpoints share nothing with cloud resources.
    The lab case that motivated it read as 81 unmanaged assets and 68 unclassified ones; the two
    inputs shared one identifier out of 68 and were simply not about each other.
+   `npm run validate` enforces the declaration itself, because every way of getting it wrong makes
+   the check quietly not apply: a typo names no table, an asymmetric pair is seen from one side
+   only, and a `subject_key` outside `required` lets a source load without that column, compare two
+   empty identifier sets, and report agreement. Silence there is indistinguishable from consensus.
 
 ## Control records (ADR 0001, ADR 0002)
 

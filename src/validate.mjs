@@ -11,6 +11,7 @@ import {
   fileExists,
   readRepoFile,
 } from './lib/load.mjs';
+import { TABLES } from './collectors/tables.mjs';
 
 /**
  * Schema validation plus the house rules that a JSON Schema cannot express.
@@ -45,10 +46,13 @@ export function validate({
   controls = loadControls(),
   scenarios = loadScenarios(),
   exceptions = loadExceptions(),
+  tables = TABLES,
   today = null,
 } = {}) {
   const errors = [];
   const warnings = [];
+
+  errors.push(...reconciliationErrors(tables));
 
   const controlSchema = schemaValidator('control.schema.json');
   const index = loadRequirementIndex();
@@ -268,6 +272,92 @@ export function validate({
     scenarioCount: scenarios.length,
     exceptionCount: exceptions.length,
   };
+}
+
+/**
+ * Checks the `reconciles_with` declarations in tables.mjs.
+ *
+ * THIS RULE EXISTS BECAUSE THE THING IT GUARDS FAILS SILENTLY. The overlap check compares two
+ * sources that claim to enumerate the same estate, and every way of getting the declaration wrong
+ * makes it quietly not apply rather than raise anything: a typo names no table, an asymmetric pair
+ * is only examined from one side, a missing `subject_key` skips the comparison, and a
+ * `subject_key` outside `required` lets a CSV load without that column at all - which yields two
+ * empty identifier sets, an overlap of zero over zero, and silence.
+ *
+ * Silence is indistinguishable from "these sources agree", which is the reading that let a control
+ * report 81 unmanaged assets against two inputs that were not about each other.
+ */
+export function reconciliationErrors(tables) {
+  const errors = [];
+
+  for (const [name, def] of Object.entries(tables)) {
+    const where = `tables.mjs: ${name}`;
+    const partners = def.reconciles_with ?? [];
+
+    if (def.subject_key && !def.columns?.includes(def.subject_key)) {
+      errors.push(`${where}: subject_key '${def.subject_key}' is not one of the table's columns.`);
+    }
+    if (partners.length === 0) continue;
+
+    if (def.role !== 'population') {
+      errors.push(
+        `${where}: only population tables reconcile. A reference list is something a control joins ` +
+          'against, and overlap with one proves nothing about the population.'
+      );
+    }
+
+    for (const partner of partners) {
+      const other = tables[partner];
+
+      if (partner === name) {
+        errors.push(`${where}: reconciles_with names itself.`);
+        continue;
+      }
+      if (!other) {
+        errors.push(
+          `${where}: reconciles_with names '${partner}', which is not a table. A typo here disables ` +
+            'the overlap check without failing anything.'
+        );
+        continue;
+      }
+      if (other.role !== 'population') {
+        errors.push(`${where}: reconciles_with names '${partner}', which is a ${other.role} table.`);
+      }
+      if (!(other.reconciles_with ?? []).includes(name)) {
+        errors.push(
+          `${where}: reconciles_with names '${partner}', but '${partner}' does not name it back. ` +
+            'Declare the pair on both sides so it reads the same from either end.'
+        );
+      }
+
+      for (const [t, d] of [
+        [name, def],
+        [partner, other],
+      ]) {
+        if (!d.subject_key) {
+          errors.push(
+            `tables.mjs: ${t}: reconciles with '${t === name ? partner : name}' but declares no ` +
+              'subject_key, so there is no column to compare and the check does not run.'
+          );
+        } else if (!(d.required ?? []).includes(d.subject_key)) {
+          errors.push(
+            `tables.mjs: ${t}: subject_key '${d.subject_key}' is not in required. A source could load ` +
+              'without it, and comparing two empty identifier sets reports agreement.'
+          );
+        }
+      }
+
+      const shared = (def.controls ?? []).filter((c) => (other.controls ?? []).includes(c));
+      if (shared.length === 0) {
+        errors.push(
+          `${where}: reconciles_with names '${partner}', but the two serve no control in common. ` +
+            'Reconciliation only means something inside one population.'
+        );
+      }
+    }
+  }
+
+  return errors;
 }
 
 /** Pulls the population restatement out of a control model's header comment. */

@@ -20,3 +20,37 @@ if [ "$actual" != "$required" ]; then
 	echo "Or for one commit:   git -c user.name=RootCawsLLC -c user.email=317738477+RootCawsLLC@users.noreply.github.com commit ..." >&2
 	exit 1
 fi
+
+# --- the primary checkout is not a working tree ----------------------------------------------
+#
+# WHY THIS IS A HOOK AND NOT A NOTE IN A README. On 2026-08-20 two sessions worked in this
+# checkout at the same time. CLAUDE.md was rewritten mid-edit under one of them, `.evidence/` was
+# emptied between two commands, source files changed under a read, and a `git add -A` swept the
+# other session's unfinished Terraform into a staging area it did not belong in. Two sessions also
+# diagnosed the same AWS Config failure within the hour and wrote two separate fixes, which
+# happened to compose - luck, not design.
+#
+# None of that was a conflict, so git had nothing to report and no rule to break, and a convention
+# written down somewhere would have been read only by whoever was already following it.
+#
+# So: work happens in a linked worktree, one per session, and the primary checkout stays a stable
+# reference for main, the lab config and the shared object store.
+#
+# The git dir and the common git dir are equal ONLY in the primary worktree; a linked one has its
+# own under .git/worktrees/<name>. --path-format=absolute normalises the primary's relative ".git"
+# so this is not comparing a relative path against an absolute one.
+git_dir=$(git rev-parse --path-format=absolute --absolute-git-dir 2>/dev/null)
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+
+if [ -n "$git_dir" ] && [ "$git_dir" = "$common_dir" ] && [ "$ALLOW_PRIMARY_COMMIT" != "1" ]; then
+	echo "pre-commit: refusing to commit in the primary checkout." >&2
+	echo "  Work belongs in a worktree, one per session, so two sessions cannot share an index." >&2
+	echo "" >&2
+	echo "  Make one:  node ~/.claude/scripts/worktree.mjs add cui-control-plane <branch>" >&2
+	echo "             (--with-lab if this session needs the real AWS lab config)" >&2
+	echo "" >&2
+	echo "  Your staged changes are untouched and still here. Nothing was lost." >&2
+	echo "" >&2
+	echo "  Deliberate exception:  ALLOW_PRIMARY_COMMIT=1 git commit ..." >&2
+	exit 1
+fi

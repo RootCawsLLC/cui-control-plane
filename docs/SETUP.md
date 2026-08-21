@@ -300,6 +300,28 @@ Ordered by how soon it will bite you.
 | Non-POA&M-able list | `reference/nist-800-171r2.index.yaml` | Verify against live 32 CFR Part 170 |
 | The other 104 controls | `controls/` | `npm run coverage` prints the backlog |
 
+## Working on this repository
+
+`npm run setup` arms `.githooks/pre-commit`, which enforces two things.
+
+The first is commit identity: the owning account rejects pushes that expose its private address,
+so a wrong-identity commit has to be rewritten rather than fixed forward.
+
+The second is that **the primary checkout is not a working tree**. Commits there are refused, and
+work belongs in a linked worktree — one per session, so two sessions cannot share an index:
+
+```bash
+node ~/.claude/scripts/worktree.mjs add cui-control-plane <branch>   # --with-lab for real config
+```
+
+Staged changes survive a refusal; nothing is lost. `ALLOW_PRIMARY_COMMIT=1 git commit` is the
+deliberate exception, and exists so the hook gets used rather than deleted.
+
+This is a hook rather than a note because the failure it prevents is invisible to git. Two
+sessions shared this checkout on 2026-08-20: a file was rewritten mid-edit under one of them,
+`.evidence/` was emptied between two commands, and a `git add -A` staged another session's
+unfinished work. None of that is a conflict, so nothing warned anybody.
+
 ## Adding a collector
 
 The contract is small. Create `src/collectors/<name>.mjs` exporting:

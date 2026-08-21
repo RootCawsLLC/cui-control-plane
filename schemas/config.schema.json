@@ -321,7 +321,8 @@
         },
         "retain_days": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "description": "MINIMUM retention: a commitment to keep at least this much evidence history, the way retention periods read elsewhere in this domain. It is NOT a delete-after trigger and nothing in this tool deletes evidence. Read as a ceiling it would be harmful: firstObserved walks history backwards to the last passing snapshot, so dropping the oldest snapshots silently shortens every open variance episode - a subject failing across 600 days of monthly snapshots reports 180 days once pruned to a 180-day window, understating Variance Duration by 70% in the direction that flatters the control. ccp doctor reports the span actually held against this number."
         },
         "fixture_path": {
           "type": "string",

@@ -60,6 +60,15 @@ crash, so the shell must not expand the pattern. Node >= 22.
    the check quietly not apply: a typo names no table, an asymmetric pair is seen from one side
    only, and a `subject_key` outside `required` lets a source load without that column, compare two
    empty identifier sets, and report agreement. Silence there is indistinguishable from consensus.
+9. **`evidence.retain_days` is a floor, and nothing deletes evidence.** It commits to keeping at
+   least that much history, the way retention periods read everywhere else in this domain.
+   Read as a delete-after trigger the same number would flatter every control: `firstObserved`
+   walks history backwards to the last passing snapshot, so dropping the oldest snapshots
+   shortens every open variance episode. A subject failing across 600 days of monthly snapshots
+   reports 180 days once pruned to a 180-day window — a 70% understatement of Variance
+   Duration, feeding FAIR-CAM and the risk layer with nothing marking it. `ccp doctor` measures
+   the span held against the commitment; a test asserts no deletion call exists anywhere in
+   `src/`. If retention ever does prune, it owes left-censoring first.
 
 ## Control records (ADR 0001, ADR 0002)
 

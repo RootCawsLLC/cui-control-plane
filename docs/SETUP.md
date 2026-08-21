@@ -339,7 +339,9 @@ Stated plainly so you find out here rather than in an assessment:
 
 - **It does not cover all 110 requirements.** Six controls ship. `npm run coverage` prints the rest.
 - **It does not model the 320 assessment objectives** from 800-171A. A C3PAO assesses objectives.
-- **It has no evidence integrity layer** — no signing, no hashing, no retention enforcement.
+- **It has no evidence integrity layer** — no signing, no hashing. Retention is *measured*
+  against `evidence.retain_days` and reported by `ccp doctor`, but never enforced: nothing here
+  deletes evidence, and a shortfall is a warning rather than an action.
 - **It does not model inherited controls** from a cloud service provider, or the shared
   responsibility that comes with them.
 - **It does not perform the SPRS affirmation.** That is a personal attestation by a named official.

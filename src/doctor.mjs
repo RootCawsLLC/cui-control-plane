@@ -5,6 +5,8 @@ import { ROOT, loadControls } from './lib/load.mjs';
 import { loadConfig, missingEnv, CONFIG_FILE, resolvePath } from './config.mjs';
 import { selectCollectors } from './collectors/registry.mjs';
 import { TABLES, csvTemplate } from './collectors/tables.mjs';
+import { evidenceDirFor } from './pipeline.mjs';
+import { retentionStatus, describeRetention } from './retention.mjs';
 
 /**
  * The "am I set up yet?" command, and the main thing standing between a junior analyst and giving
@@ -124,6 +126,38 @@ export function doctor({ env = process.env } = {}) {
       'This repository cannot ship it - it changes on a recurring cadence and a stale copy reads as ' +
         'screened. Export the current DoD-published list to CSV. See docs/SETUP.md.'
     );
+  }
+
+  // --- evidence retention --------------------------------------------------------------------
+  // A floor, not a delete-after trigger: the check measures what is held against what was
+  // promised, and nothing anywhere deletes evidence. Reported against the REAL evidence
+  // directory - fixture history is synthetic and retaining it proves nothing.
+  const retention = retentionStatus({
+    dir: evidenceDirFor({ config, fixture: false }),
+    retainDays: config.evidence?.retain_days,
+  });
+  if (retention.configured != null) {
+    add(
+      retention.meets ? OK : WARN,
+      'evidence retention',
+      describeRetention(retention),
+      retention.meets
+        ? null
+        : 'Either not enough time has passed yet, or evidence inside the window is gone - this ' +
+          'cannot tell those apart. If the deployment is younger than the commitment, nothing is ' +
+          'wrong. If it is not, something removed evidence that was promised to be kept.'
+    );
+    // Distinct failure, distinct line. A comfortable span with a six-month-old newest snapshot is
+    // a dead pipeline, and folding it into the span would hide that.
+    if (retention.staleDays != null && retention.staleDays > 7) {
+      add(
+        WARN,
+        'evidence freshness',
+        `newest evidence is ${retention.staleDays} day(s) old`,
+        'Retention is being met by history that has stopped growing. Check that the pipeline is ' +
+          'still running on its cadence.'
+      );
+    }
   }
 
   return summarise(checks, { config, configState });

@@ -3,6 +3,7 @@ import * as azure from './azure-assets.mjs';
 import * as okta from './okta-identities.mjs';
 import * as aws from './aws-assets.mjs';
 import * as awsIam from './aws-iam-identities.mjs';
+import * as awsIdc from './aws-identity-center.mjs';
 import * as csv from './csv-sources.mjs';
 
 /**
@@ -41,6 +42,9 @@ export function selectCollectors(config) {
       break;
     case 'okta':
       chosen.push(wrap(okta, 'okta-identities'));
+      break;
+    case 'aws-identity-center':
+      chosen.push(wrap(awsIdc, 'aws-identity-center'));
       break;
     case 'aws-iam':
       chosen.push(wrap(awsIam, 'aws-iam-identities'));
@@ -117,5 +121,6 @@ export const ALL = {
   okta,
   aws,
   awsIam,
+  awsIdc,
   ...csv,
 };

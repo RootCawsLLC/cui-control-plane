@@ -1,0 +1,13 @@
+{
+  "_comment": "NOT REAL EVIDENCE. Shapes match identitystore ListUsers and ListGroupMemberships. Note factor_count is absent from the source entirely - Identity Center exposes no MFA API, which is the point this fixture exists to preserve.",
+  "users": [
+    { "UserId": "1468b488-c061-70cc-3a5c-e17619448d31", "UserName": "asmith", "DisplayName": "A Smith", "Active": null },
+    { "UserId": "24a91f02-9c33-41ab-8b0e-7c2d5f118a90", "UserName": "bjones", "DisplayName": "B Jones", "Active": null },
+    { "UserId": "3f7c2d41-1aa8-4c9e-9f22-0d61b4e77c15", "UserName": "breakglass", "DisplayName": "Break Glass", "Active": null },
+    { "UserId": "4b8e6a17-77d2-4e51-bc90-6a3f2c8d9e04", "UserName": "cdavis", "DisplayName": "C Davis", "Active": false }
+  ],
+  "membershipsByUser": {
+    "3f7c2d41-1aa8-4c9e-9f22-0d61b4e77c15": ["BreakGlass"],
+    "1468b488-c061-70cc-3a5c-e17619448d31": ["Admin"]
+  }
+}

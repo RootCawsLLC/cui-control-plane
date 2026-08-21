@@ -1,0 +1,112 @@
+# Unattended evidence collection.
+#
+# This is what makes Variance Duration real. VD is measured from how long a failure persists ACROSS
+# snapshots, so the pipeline has to run on a schedule and the evidence has to accumulate somewhere
+# that outlives the runner. A human-driven run cannot do it: AWS SSO sessions expire in about an
+# hour and refreshing one needs somebody to type a device code.
+#
+# EVIDENCE NEVER LANDS IN THIS REPOSITORY. It describes a real account, and this repository is
+# public. It is synced to and from S3, and the only thing published back here is a run summary.
+name: collect-evidence
+
+on:
+  schedule:
+    # 06:17 UTC daily. Deliberately not on the hour: every scheduled workflow on GitHub fires at :00,
+    # which is exactly when the scheduler is most backed up and runs are most delayed.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Collect and report, but do not persist the snapshot to S3'
+        type: boolean
+        default: false
+
+# Least privilege for the job itself. id-token is what lets it assume the AWS role; contents stays
+# read because nothing here commits.
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  # Two overlapping runs would race on the S3 prefix and could interleave a partial snapshot into
+  # the history that variance is computed from.
+  group: collect-evidence
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      AWS_REGION: us-east-1
+      EVIDENCE_URI: s3://${{ vars.CCP_EVIDENCE_BUCKET }}/evidence
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # The role trusts only refs/heads/main, so this step is what fails first if somebody tries to
+      # run this workflow from a branch.
+      - name: Assume the collector role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_COLLECTOR_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: ccp-collect-${{ github.run_id }}
+
+      - name: Confirm the identity actually assumed
+        run: aws sts get-caller-identity
+
+      # Restore history BEFORE collecting. first_observed is resolved against prior snapshots, so a
+      # run that starts from an empty .evidence would date every existing failure to today and reset
+      # every variance duration to zero.
+      - name: Restore evidence history
+        run: |
+          mkdir -p .evidence
+          aws s3 sync "$EVIDENCE_URI" .evidence --only-show-errors
+          echo "restored $(find .evidence -name '*.json' | wc -l) prior snapshot(s)"
+
+      - name: Collect
+        run: node src/cli.mjs pipeline | tee /tmp/pipeline.txt
+
+      # A run that asserts nothing is not a successful run. Without this the job goes green while
+      # producing no snapshot - which is precisely how expired credentials would go unnoticed.
+      - name: Fail if nothing was asserted
+        run: |
+          if grep -qE '^  0 control\(s\) asserted' /tmp/pipeline.txt; then
+            echo "::error::No control produced an assertion. Every source was unavailable - check the recorder and the role's permissions."
+            exit 1
+          fi
+
+      - name: Persist the snapshot
+        if: ${{ !inputs.dry_run }}
+        run: |
+          aws s3 sync .evidence "$EVIDENCE_URI" --only-show-errors
+          echo "persisted $(find .evidence -name '*.json' | wc -l) snapshot(s)"
+
+      - name: Variance
+        run: node src/cli.mjs variance --assertions .evidence | tee /tmp/variance.txt
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo '## Evidence collection'
+            echo
+            echo '```'
+            tail -n 30 /tmp/pipeline.txt 2>/dev/null || echo 'pipeline did not run'
+            echo '```'
+            echo
+            echo '## Variance'
+            echo
+            echo '```'
+            tail -n 20 /tmp/variance.txt 2>/dev/null || echo 'variance did not run'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

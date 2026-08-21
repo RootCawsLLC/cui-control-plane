@@ -132,6 +132,28 @@ Two smaller things that are code and were deliberately left:
   collapses the Treatment Selection segment into Implementation. Wiring it needs a work queue with
   an API.
 
+## The stale-source lesson, recorded because it cost a false pass
+
+On 2026-08-21 the AWS collector returned 82 resources from lab account 445817184167 with
+`complete: true` at **confidence tier 4** - the top tier, "internal empirical from a system of
+record" - from an AWS Config index whose recorder had been deleted. Three of the five S3 buckets it
+named no longer existed; four buckets that did exist were invisible to it. The newest item was 17
+days old.
+
+Config does not error when the recorder is gone. It answers from whatever is still indexed, which is
+the worst failure mode available to a compliance tool: a confident, well-formed, wrong answer that
+nothing downstream can detect. The earlier report of "82 real resources" in this file was built on
+that same stale index and was wrong.
+
+`recorderState()` now runs BEFORE the query and refuses on no recorder, a stopped recorder, or
+all-FAILURE status; `stalenessDays()` refuses when the newest item is past
+`cloud.max_staleness_days`. Both refusals withhold the control rather than asserting.
+
+**The generalisable rule: liveness of a source is not implied by it returning data.** Every
+collector reading a system that can be switched off while still serving cached answers needs the
+same check. Entra and Okta return errors when disabled, so they are lower risk - but that is a
+property worth confirming per source rather than assuming.
+
 ## Known rough edges
 
 - `populationsAgree` is a Jaccard overlap on significant words with a 0.5 threshold. It catches a

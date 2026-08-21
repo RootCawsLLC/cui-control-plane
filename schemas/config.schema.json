@@ -169,6 +169,11 @@
           "description": "Tag key carrying the data classification. Defaults to 'data_classification'.",
           "type": "string",
           "pattern": "^[A-Za-z0-9 _.:/=+@-]{1,128}$"
+        },
+        "max_staleness_days": {
+          "description": "How old the newest AWS Config item may be before the snapshot stops counting as current. Default 7. A recorder can be running and capturing nothing; item age is the only signal that separates a quiet account from a broken pipeline.",
+          "type": "integer",
+          "minimum": 1
         }
       }
     },

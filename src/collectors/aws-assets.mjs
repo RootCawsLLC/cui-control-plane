@@ -38,7 +38,88 @@ export const FIXTURE = 'aws-assets';
  * denominator with holes in it is not a denominator.
  */
 export const QUERY =
-  "SELECT resourceId, resourceType, awsRegion, accountId, tags WHERE resourceType LIKE 'AWS::%'";
+  'SELECT resourceId, resourceType, awsRegion, accountId, tags, configurationItemCaptureTime ' +
+  "WHERE resourceType LIKE 'AWS::%'";
+
+/**
+ * How old the newest Config item may be before the snapshot stops counting as current.
+ *
+ * Seven days is a convention, not a measurement - tune it per estate. It exists because a recorder
+ * can be present and "recording" while capturing nothing, and the age of the newest item is the
+ * only signal separating a quiet account from a broken pipeline.
+ */
+export const DEFAULT_MAX_STALENESS_DAYS = 7;
+
+/**
+ * Is AWS Config actually running here?
+ *
+ * THIS EXISTS BECAUSE THE COLLECTOR REPORTED STALE DATA AS CURRENT. Against lab account
+ * 445817184167 on 2026-08-21, SelectResourceConfig happily returned 82 resources from a
+ * decommissioned index: three of the five S3 buckets it named had been deleted, and four buckets
+ * that genuinely existed were invisible to it. The population came back `complete: true` at
+ * confidence tier 4 - the top tier, "internal empirical from a system of record" - over a system of
+ * record that had been switched off.
+ *
+ * Config does not error when the recorder is gone. It answers from whatever is still indexed, which
+ * is the worst possible failure mode: a confident, well-formed, wrong answer. Nothing downstream can
+ * detect that, so it has to be caught here.
+ */
+export async function recorderState(client, sdk) {
+  const { DescribeConfigurationRecorderStatusCommand } = sdk;
+  let statuses;
+  try {
+    const res = await client.send(new DescribeConfigurationRecorderStatusCommand({}));
+    statuses = res.ConfigurationRecordersStatus ?? [];
+  } catch (err) {
+    // Not being allowed to ask is not the same as the answer being yes.
+    return {
+      ok: false,
+      reason:
+        `could not determine whether AWS Config is recording (${err.name ?? 'Error'}: ${err.message}). ` +
+        'Without that, any result is of unknown currency.',
+    };
+  }
+
+  if (statuses.length === 0) {
+    return {
+      ok: false,
+      reason:
+        'no AWS Config recorder exists in this region. SelectResourceConfig still answers from the ' +
+        'residual index, so the result would be a stale snapshot presented as current.',
+    };
+  }
+
+  const recording = statuses.filter((s) => s.recording);
+  if (recording.length === 0) {
+    return {
+      ok: false,
+      reason: 'an AWS Config recorder exists but is stopped - nothing has been captured since it halted.',
+    };
+  }
+
+  const healthy = recording.filter((s) => s.lastStatus !== 'FAILURE');
+  if (healthy.length === 0) {
+    return {
+      ok: false,
+      reason:
+        `every running recorder reports lastStatus FAILURE (${recording[0].lastErrorMessage ?? 'no detail'}) - ` +
+        'running and not capturing.',
+    };
+  }
+  return { ok: true, recorders: healthy.length };
+}
+
+/**
+ * Age of the newest captured item, which catches the recorder that is nominally running but has
+ * stopped capturing. Returns null when nothing carries a capture time.
+ */
+export function stalenessDays(results, asOf) {
+  const times = results.map((r) => r.configurationItemCaptureTime).filter(Boolean).sort();
+  const newest = times.at(-1);
+  if (!newest) return null;
+  const ms = Date.parse(asOf) - Date.parse(newest);
+  return Number.isNaN(ms) ? null : ms / 86400000;
+}
 
 /**
  * Config returns tags in more than one shape depending on the API and resource type - sometimes a
@@ -85,7 +166,7 @@ async function loadSdk() {
   }
 }
 
-export async function collect({ config, collectedAt, fixture = false }) {
+export async function collect({ config, collectedAt, fixture = false, sdk: injectedSdk = null }) {
   if (fixture) {
     const data = JSON.parse(readFileSync(repoPath('fixtures', 'collectors', `${FIXTURE}.json`), 'utf8'));
     return {
@@ -109,7 +190,7 @@ export async function collect({ config, collectedAt, fixture = false }) {
     );
   }
 
-  const sdk = await loadSdk();
+  const sdk = injectedSdk ?? (await loadSdk());
   if (!sdk) {
     return unavailable(
       '@aws-sdk/client-config-service is not installed. It is an optional dependency so that ' +
@@ -120,6 +201,14 @@ export async function collect({ config, collectedAt, fixture = false }) {
   const { ConfigServiceClient, SelectResourceConfigCommand, SelectAggregateResourceConfigCommand } = sdk;
   const client = new ConfigServiceClient({ region });
   const aggregator = config.cloud?.aggregator;
+
+  // Liveness BEFORE the query, not after. Querying first and judging the answer afterwards means
+  // paying for a result that was never usable, and it invites treating a plausible-looking payload
+  // as evidence that the source is healthy.
+  const recorder = await recorderState(client, sdk);
+  if (!recorder.ok) {
+    return unavailable(`AWS Config is not a live source in ${region}: ${recorder.reason}`);
+  }
 
   const results = [];
   let nextToken;
@@ -141,6 +230,19 @@ export async function collect({ config, collectedAt, fixture = false }) {
     // AccessDenied is not an empty account, and NoSuchConfigurationAggregator is not an empty
     // aggregator. Both mean the population is unknown, which withholds every control over it.
     return unavailable(`AWS Config query failed: ${err.name ?? 'Error'} - ${err.message}`);
+  }
+
+  // A recorder can be present, running and healthy while capturing nothing. The age of the newest
+  // item is the only thing that separates a genuinely quiet account from a broken pipeline, and the
+  // lab's index was 17 days old behind a recorder that no longer existed at all.
+  const maxStaleness = config.cloud?.max_staleness_days ?? DEFAULT_MAX_STALENESS_DAYS;
+  const age = stalenessDays(results, collectedAt);
+  if (age !== null && age > maxStaleness) {
+    return unavailable(
+      `AWS Config is recording but its newest item is ${age.toFixed(1)} days old, past the ` +
+        `${maxStaleness}-day limit. The index exists; it is not current, and a stale inventory is a ` +
+        'wrong denominator rather than a slightly old one.'
+    );
   }
 
   const rows = grade({ results, collectedAt, ownerTag: config.cloud?.owner_tag, classificationTag: config.cloud?.classification_tag });

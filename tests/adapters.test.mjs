@@ -136,8 +136,9 @@ test('AWS never returns a complete-but-empty population, whatever is missing', a
   // that depends on that passes or fails for reasons that have nothing to do with the code.
   //
   // The invariant that matters in every one of those environments: a missing SDK, absent
-  // credentials, or a Config query failure must all produce an UNAVAILABLE population - never a
-  // clean empty one, which would read as "no resources, nothing failing".
+  // credentials, a Config query failure, or a source that is not live must ALL produce an
+  // UNAVAILABLE population - never a clean empty one, which would read as "no resources, nothing
+  // failing".
   const r = await collectAws({
     config: { cloud: { provider: 'aws-govcloud', region: 'us-gov-west-1' } },
     collectedAt: AT,
@@ -148,8 +149,8 @@ test('AWS never returns a complete-but-empty population, whatever is missing', a
     assert.equal(r.population.complete, false);
     assert.match(
       r.population.reconciliation,
-      /@aws-sdk\/client-config-service|AWS Config query failed/,
-      'the reason must name the SDK or the query failure'
+      /@aws-sdk\/client-config-service|AWS Config query failed|not a live source|days old/,
+      'the reason must name the SDK, the query failure, or the liveness/staleness refusal'
     );
   } else {
     assert.equal(r.population.complete, true);

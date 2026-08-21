@@ -233,6 +233,13 @@ was found the hard way: pointed at a real account that tags everything with `Pro
 `Environment`, `ManagedBy` and `ComplianceScope`, the collector reported 82 of 82 resources
 unowned. That is one configuration line, not 82 findings, and the pipeline now says so on the run.
 
+Config must actually be **recording**. The collector checks `DescribeConfigurationRecorderStatus`
+before querying and refuses if no recorder exists, if it is stopped, or if every recorder reports
+`FAILURE` — because `SelectResourceConfig` keeps answering from the residual index after a recorder
+is deleted, returning a confident, well-formed, wrong inventory. It also refuses when the newest
+item is older than `cloud.max_staleness_days`, which catches a recorder that is running and
+capturing nothing.
+
 It reads **AWS Config**, not the Tagging API — the Tagging API only returns taggable resources, and
 holes in the boundary inventory are holes in the denominator every other CUI-scoped control depends
 on. Config needs to be enabled, which it needs to be for CMMC regardless.
@@ -268,6 +275,7 @@ Ordered by how soon it will bite you.
 | Sources | `ccp.config.yaml` → `identity`, `cloud`, `cmdb`, `mdm`, `procurement`, `inventory`, `incident_response` | Start CSV, upgrade to API |
 | **Asset reconciliation** | `cloud` **and** `cmdb` (and `mdm`) | Both halves, or the control restates one source instead of reconciling two. One half alone is not a measurement |
 | Government endpoints | `identity.cloud_environment`, `identity.org_url`, `cloud.region` | GCC High, okta-gov.com and GovCloud all use different hosts or partitions |
+| **Config freshness** | `cloud.max_staleness_days` | Default 7. AWS Config answers from its index even when the recorder is deleted, so the collector checks the recorder is running and the newest item is recent, and **withholds** rather than reporting a stale snapshot as current |
 | **Asset tag keys** | `cloud.owner_tag`, `cloud.classification_tag` | Defaults are `owner` / `data_classification`. **Check these first** if the inventory reports everything unowned - it is usually the wrong tag key, not universal non-compliance |
 | 1260H list | `inbox/entity-list-1260h.csv` | Refresh on a schedule |
 | §889 manufacturers | `reference/covered-telecom.seed.csv` | Statutory five plus your affiliates |

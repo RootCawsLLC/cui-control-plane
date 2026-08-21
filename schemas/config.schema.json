@@ -70,6 +70,7 @@
           "enum": [
             "entra",
             "okta",
+            "aws-iam",
             "csv",
             "none"
           ]
@@ -111,6 +112,10 @@
         "org_url": {
           "description": "Okta org URL, e.g. https://acme.okta.com or https://acme.okta-gov.com. Government orgs are on okta-gov.com and okta.mil - the same trap as graph.microsoft.us.",
           "type": "string"
+        },
+        "include_console_disabled": {
+          "description": "aws-iam only. Include principals with no console password. Default false: a key-only automation principal has no console to phish, so counting it as an unenrolled human overstates the failure. Set true only if you genuinely sign in with those.",
+          "type": "boolean"
         }
       }
     },

@@ -104,7 +104,7 @@ and affiliates are in scope too. Add yours.
 
 ## Step 4 — Wire your first real source
 
-Four paths. Do **A** today; do the one that matches your stack this week.
+Five paths. Do **A** today; do the one that matches your stack this week.
 
 ### Path A — CSV exports (works everywhere, no credentials)
 
@@ -227,6 +227,32 @@ you only touch `identity.phishing_resistant_methods` if your policy differs.
 **Only ACTIVE factors count.** An Okta enrolment can sit in `PENDING_ACTIVATION` indefinitely, and
 counting it is how an MFA rollout reports full coverage while part of the population still signs in
 with a password.
+
+### Path E — AWS IAM users (single account, no federation)
+
+Set `identity.provider: aws-iam`. Uses the standard AWS credential chain — no extra secrets.
+
+**Read this before choosing it.** Entra and Okta are identity providers; AWS IAM is an
+authorisation system for one account that happens to hold user records. If your people sign in
+through an IdP and assume roles, your IAM users are service principals and break-glass accounts —
+a population of two or three, not your workforce — and pointing the MFA control at them produces a
+flattering number about the wrong set.
+
+It is the right choice for the case that is common among smaller subcontractors: one AWS account,
+IAM users as the actual human sign-in path, no federation. The tool cannot tell which case you are
+in, so choosing this provider is you asserting the second one.
+
+Two behaviours worth knowing:
+
+- **Principals with no console password are excluded by default.** A key-only automation user has
+  no console to phish, so counting it as an unenrolled human overstates the failure. Set
+  `identity.include_console_disabled: true` if you genuinely sign in with those.
+- **IAM MFA never reports as phishing-resistant.** The credential report cannot distinguish TOTP
+  from a hardware key, so the control fails an enrolled TOTP user with
+  `no_phishing_resistant_factor` — correctly, for a CUI boundary. That is a real finding about
+  your authentication strength, not a gap in the collector.
+
+Permissions: `iam:ListUsers`, `iam:GenerateCredentialReport`, `iam:GetCredentialReport`.
 
 ### Path D — AWS GovCloud
 

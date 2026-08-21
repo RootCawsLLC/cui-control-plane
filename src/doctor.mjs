@@ -167,7 +167,7 @@ function providerFor(name, config) {
   if (name.startsWith('entra')) return 'entra';
   if (name.startsWith('azure')) return config.cloud.provider;
   if (name.startsWith('okta')) return 'okta';
-  if (name.startsWith('aws')) return 'aws-govcloud';
+  if (name.startsWith('aws')) return 'aws-govcloud';  // aws-iam and aws-assets both use the AWS credential chain
   return 'csv';
 }
 

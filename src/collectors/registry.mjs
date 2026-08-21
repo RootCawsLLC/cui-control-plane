@@ -2,6 +2,7 @@ import * as entra from './entra-identities.mjs';
 import * as azure from './azure-assets.mjs';
 import * as okta from './okta-identities.mjs';
 import * as aws from './aws-assets.mjs';
+import * as awsIam from './aws-iam-identities.mjs';
 import * as csv from './csv-sources.mjs';
 
 /**
@@ -40,6 +41,9 @@ export function selectCollectors(config) {
       break;
     case 'okta':
       chosen.push(wrap(okta, 'okta-identities'));
+      break;
+    case 'aws-iam':
+      chosen.push(wrap(awsIam, 'aws-iam-identities'));
       break;
     default:
       skipped.push({ name: 'identity', reason: 'identity.provider is none - the MFA control has no population' });
@@ -112,5 +116,6 @@ export const ALL = {
   azure,
   okta,
   aws,
+  awsIam,
   ...csv,
 };

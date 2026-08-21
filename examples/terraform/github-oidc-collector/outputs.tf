@@ -15,5 +15,10 @@ output "evidence_uri" {
 
 output "trusted_subjects" {
   description = "Exactly which workflow subjects may assume the role. Anything else is refused."
-  value       = [for ref in var.allowed_refs : "repo:${var.github_repository}:ref:${ref}"]
+  value       = local.trusted_subjects
+}
+
+output "config_uri" {
+  description = "Upload the organisation's ccp.config.yaml here; the scheduled workflow fetches it before collecting."
+  value       = "s3://${aws_s3_bucket.evidence.id}/${var.config_prefix}/ccp.config.yaml"
 }

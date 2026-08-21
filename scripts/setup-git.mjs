@@ -54,4 +54,6 @@ for (const [key, value] of settings) {
 if (changed.length > 0) {
   console.log(`cui-control-plane: armed the commit-identity guard (${changed.join(', ')}).`);
   console.log(`  commits are now authored ${AUTHOR_NAME} <${AUTHOR_EMAIL}>, enforced by ${HOOKS_PATH}/pre-commit`);
+  console.log('  that hook also refuses commits in the primary checkout - work belongs in a worktree:');
+  console.log('    node ~/.claude/scripts/worktree.mjs add cui-control-plane <branch>');
 }

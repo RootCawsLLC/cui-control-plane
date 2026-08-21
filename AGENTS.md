@@ -69,6 +69,15 @@ crash, so the shell must not expand the pattern. Node >= 22.
    Duration, feeding FAIR-CAM and the risk layer with nothing marking it. `ccp doctor` measures
    the span held against the commitment; a test asserts no deletion call exists anywhere in
    `src/`. If retention ever does prune, it owes left-censoring first.
+10. **The primary checkout is not a working tree.** `.githooks/pre-commit` refuses commits there;
+    work happens in a linked worktree, one per session. Two sessions sharing this checkout on
+    2026-08-20 rewrote CLAUDE.md mid-edit, emptied `.evidence/` between two commands, changed
+    source files under a read, and swept unfinished Terraform into a `git add -A`. None of it was
+    a conflict, so git had nothing to report — which is why this is a hook and not a convention.
+    `node ~/.claude/scripts/worktree.mjs add cui-control-plane <branch>` makes one and bootstraps
+    it; `ALLOW_PRIMARY_COMMIT=1` is the deliberate exception. Note the hook only binds once armed
+    by `npm run setup`, and `core.hooksPath` is relative, so `.githooks/` must stay tracked or a
+    worktree silently runs no hooks at all.
 
 ## Control records (ADR 0001, ADR 0002)
 

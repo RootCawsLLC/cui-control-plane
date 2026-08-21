@@ -30,9 +30,7 @@ export async function runPipeline({
   log = console.log,
 } = {}) {
   const controls = loadControls();
-  // resolve, not join: an absolute evidence path is legitimate configuration, and join would
-  // glue it onto the repo root and produce a nonsense directory.
-  const evidenceDir = resolve(ROOT, config.evidence?.path ?? '.evidence');
+  const evidenceDir = evidenceDirFor({ config, fixture });
   const { chosen, skipped } = selectCollectors(config);
 
   // --- collect --------------------------------------------------------------------------------
@@ -109,7 +107,7 @@ export async function runPipeline({
     }
   }
 
-  const prior = readPriorEvidence(evidenceDir);
+  const prior = readPriorEvidence(evidenceDir, { fixture });
   const assertions = [];
   const withheld = [];
 
@@ -162,12 +160,15 @@ export async function runPipeline({
 
   // --- write ----------------------------------------------------------------------------------
   mkdirSync(evidenceDir, { recursive: true });
-  for (const a of assertions) {
-    writeFileSync(
-      join(evidenceDir, `${a.control_id}@${a.as_of.slice(0, 10)}.json`),
-      `${JSON.stringify(a, null, 2)}\n`
-    );
-  }
+  const targets = assertions.map((a) => ({
+    a,
+    file: join(evidenceDir, `${a.control_id}@${a.as_of.slice(0, 10)}.json`),
+  }));
+  // Check EVERY target before writing any. A refusal halfway through would leave the run half
+  // written - some controls updated, some not - which is a worse artifact than either outcome
+  // the refusal exists to prevent.
+  for (const t of targets) refuseToCrossStamps(t.file, t.a);
+  for (const t of targets) writeFileSync(t.file, `${JSON.stringify(t.a, null, 2)}\n`);
 
   return { assertions, withheld, collected, skipped, built, notes, evidenceDir, asOf };
 }
@@ -279,12 +280,69 @@ function varianceFor(row, history, subjectId, asOf) {
   };
 }
 
-export function readPriorEvidence(dir) {
+/**
+ * Where this run writes. SYNTHETIC AND REAL EVIDENCE NEVER SHARE A DIRECTORY.
+ *
+ * A fixture run used to write `<control>@<date>.json` into the same directory as a live run, so
+ * a demo silently destroyed that day's real evidence - and `.evidence/` is gitignored, so there
+ * was nothing to restore from.
+ *
+ * The fixture directory is DERIVED rather than configured, so existing deployments separate
+ * correctly without anybody editing a config file. It nests under the real path deliberately:
+ * readdirSync does not recurse, so a real run cannot see fixture snapshots even by accident.
+ */
+export function evidenceDirFor({ config, fixture = false } = {}) {
+  // resolve, not join: an absolute evidence path is legitimate configuration, and join would
+  // glue it onto the repo root and produce a nonsense directory.
+  const real = resolve(ROOT, config?.evidence?.path ?? '.evidence');
+  if (!fixture) return real;
+  return config?.evidence?.fixture_path
+    ? resolve(ROOT, config.evidence.fixture_path)
+    : join(real, 'fixture');
+}
+
+/**
+ * Refuses to overwrite an assertion with one of the opposite kind.
+ *
+ * Separate directories already prevent this; this is the second lock, for the case where someone
+ * points `evidence.fixture_path` at the real directory or drops a demo artifact into it by hand.
+ * Losing real evidence has to be an error somebody sees, never a silent overwrite.
+ */
+export function refuseToCrossStamps(file, assertion) {
+  if (!existsSync(file)) return;
+  let existing;
+  try {
+    existing = JSON.parse(readFileSync(file, 'utf8'));
+  } catch {
+    return; // Unreadable: not evidence anybody can lose. The run replaces it.
+  }
+  const was = existing.fixture === true;
+  const now = assertion.fixture === true;
+  if (was === now) return;
+  throw new Error(
+    `refusing to overwrite ${was ? 'FIXTURE' : 'REAL'} evidence with a ${now ? 'FIXTURE' : 'REAL'} run: ${file}
+` +
+      'Synthetic and real evidence must not share a directory. Check evidence.path and ' +
+      'evidence.fixture_path in ccp.config.yaml, then move or delete the file deliberately.'
+  );
+}
+
+/**
+ * Prior snapshots for this run, of THIS RUN'S KIND only.
+ *
+ * The stamp filter is defence in depth - the directories are already separate - but a legacy
+ * directory from before that split still holds both kinds, and a real assertion must never date
+ * a finding from a synthetic one. Without this, a genuine finding inherited first_observed from
+ * a made-up snapshot and was emitted unstamped at confidence tier 4, with the fabricated
+ * duration flowing into Variance Duration and out to the risk layer.
+ */
+export function readPriorEvidence(dir, { fixture = false } = {}) {
   if (!existsSync(dir)) return {};
   const byControl = {};
   for (const f of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
     try {
       const a = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+      if ((a.fixture === true) !== fixture) continue;
       byControl[a.control_id] = [...(byControl[a.control_id] ?? []), a];
     } catch {
       // A corrupt evidence file must not take the run down; it is skipped and the population
@@ -297,7 +355,8 @@ export function readPriorEvidence(dir) {
 
 export function formatPipeline(result) {
   const out = [];
-  out.push(`Evidence written to ${result.evidenceDir} (as of ${result.asOf})`);
+  const kind = result.assertions.some((x) => x.fixture) ? 'FIXTURE evidence' : 'Evidence';
+  out.push(`${kind} written to ${result.evidenceDir} (as of ${result.asOf})`);
   out.push('');
   out.push(`  ${result.assertions.length} control(s) asserted:`);
   for (const a of result.assertions) {

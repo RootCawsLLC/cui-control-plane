@@ -317,6 +317,10 @@
         "retain_days": {
           "type": "integer",
           "minimum": 1
+        },
+        "fixture_path": {
+          "type": "string",
+          "description": "Where --fixture runs write. Defaults to a `fixture/` subdirectory of evidence.path, and should almost never be set. Synthetic and real evidence must not share a directory: a fixture run would overwrite that day's real assertion file, and prior-evidence reads would date real findings from synthetic snapshots. Pointing this at evidence.path is refused at write time."
         }
       }
     }

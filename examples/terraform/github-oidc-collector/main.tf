@@ -25,8 +25,35 @@ data "aws_partition" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  oidc_arn   = "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:oidc-provider/token.actions.githubusercontent.com"
-  bucket     = coalesce(var.evidence_bucket_name, "${var.name_prefix}-ccp-evidence-${local.account_id}")
+
+  # GitHub can mint the subject claim in two shapes, and which one you get is a REPOSITORY SETTING
+  # rather than anything the workflow controls:
+  #
+  #   name form  repo:Owner/Name:ref:refs/heads/main
+  #   id form    repo:Owner@<owner_id>/Name@<repo_id>:ref:refs/heads/main
+  #
+  # Check yours with:
+  #   gh api repos/OWNER/NAME/actions/oidc/customization/sub
+  # and read sub_claim_prefix. A role that trusts only the name form fails against a repository
+  # emitting the id form with "Not authorized to perform sts:AssumeRoleWithWebIdentity" - which
+  # reads exactly like a permissions problem and is actually a claim-shape mismatch.
+  #
+  # Both are accepted when the ids are supplied. The id form is the stronger of the two: renaming
+  # the repository or the owner does not let somebody squat the old name and inherit this trust.
+  id_prefix = var.github_owner_id != null && var.github_repository_id != null ? format(
+    "repo:%s@%s/%s@%s",
+    split("/", var.github_repository)[0],
+    var.github_owner_id,
+    split("/", var.github_repository)[1],
+    var.github_repository_id,
+  ) : null
+
+  trusted_subjects = concat(
+    [for ref in var.allowed_refs : "repo:${var.github_repository}:ref:${ref}"],
+    local.id_prefix == null ? [] : [for ref in var.allowed_refs : "${local.id_prefix}:ref:${ref}"],
+  )
+  oidc_arn = "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:oidc-provider/token.actions.githubusercontent.com"
+  bucket   = coalesce(var.evidence_bucket_name, "${var.name_prefix}-ccp-evidence-${local.account_id}")
 }
 
 # The provider is account-wide and almost always already present - creating a second one fails, and
@@ -70,7 +97,7 @@ data "aws_iam_policy_document" "assume" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [for ref in var.allowed_refs : "repo:${var.github_repository}:ref:${ref}"]
+      values   = local.trusted_subjects
     }
   }
 }
@@ -144,8 +171,18 @@ data "aws_iam_policy_document" "collect" {
     condition {
       test     = "StringLike"
       variable = "s3:prefix"
-      values   = ["${var.evidence_prefix}/*", var.evidence_prefix]
+      values   = ["${var.evidence_prefix}/*", var.evidence_prefix, "${var.config_prefix}/*", var.config_prefix]
     }
+  }
+
+  # The organisation config lives beside the evidence rather than in the repository: it names one
+  # account's boundary and systems, and this repository is public. READ ONLY - a collection run has
+  # no business rewriting the definition of what it is collecting.
+  statement {
+    sid       = "ConfigRead"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.evidence.arn}/${var.config_prefix}/*"]
   }
 
   statement {

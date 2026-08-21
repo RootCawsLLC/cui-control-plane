@@ -59,3 +59,21 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "github_owner_id" {
+  description = "Numeric owner id. Supply with github_repository_id when the repository emits the immutable id-based subject claim - check with: gh api repos/OWNER/NAME/actions/oidc/customization/sub and read sub_claim_prefix. Omitting these where the id form is in use produces a role that cannot be assumed, failing as 'Not authorized' rather than as a claim mismatch."
+  type        = string
+  default     = null
+}
+
+variable "github_repository_id" {
+  description = "Numeric repository id. See github_owner_id."
+  type        = string
+  default     = null
+}
+
+variable "config_prefix" {
+  description = "Key prefix holding the organisation's ccp.config.yaml. The role may READ this and nothing else in the bucket outside the evidence prefix. Kept out of the repository because it describes one account's boundary and systems."
+  type        = string
+  default     = "config"
+}

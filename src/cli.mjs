@@ -10,7 +10,7 @@ import { score, formatScore, UnverifiedWeights } from './sprs.mjs';
 import { variance, formatVariance } from './variance.mjs';
 import { policy, formatPolicy } from './policy.mjs';
 import { representation889, formatRepresentation } from './representation.mjs';
-import { loadConfig, ConfigError } from './config.mjs';
+import { loadConfig, ConfigError, CONFIG_FILE } from './config.mjs';
 import { init } from './init.mjs';
 import { doctor, formatDoctor, writeTemplates } from './doctor.mjs';
 import { runPipeline, formatPipeline } from './pipeline.mjs';
@@ -27,6 +27,7 @@ const USAGE = `ccp - CUI control plane
   ccp init                        interview -> ccp.config.yaml (start here)
   ccp doctor                      what is configured, what is missing, what will run
   ccp pipeline  [--fixture]       collect -> load -> build -> assert, writing .evidence/
+                [--require-real]  refuse to write synthetic evidence (use for scheduled runs)
 
   ccp validate                    schema + house rules over controls/ and models/
   ccp coverage                    which of the 110 requirements have a control
@@ -80,6 +81,23 @@ async function main(argv) {
       console.log('');
     }
     const fixture = argv.includes('--fixture') || config._usingExample;
+
+    // A scheduled, unattended run must never contribute synthetic snapshots to a real evidence
+    // history. This is not hypothetical: ccp.config.yaml is gitignored - correctly, it describes one
+    // organisation and belongs in that organisation's repository - so a CI checkout has no config,
+    // falls back to the bundled example, and collects fixtures. The job goes green, the numbers look
+    // plausible, and fixture data enters the audit trail that Variance Duration is computed from.
+    if (argv.includes('--require-real') && fixture) {
+      console.error('refusing to run: --require-real was given but this run would use FIXTURE data.');
+      console.error('');
+      console.error(config._usingExample
+        ? `  cause: no ${CONFIG_FILE} was found, so the bundled example config was used.`
+        : '  cause: --fixture was passed explicitly.');
+      console.error('');
+      console.error('  A scheduled run must collect from real systems or collect nothing. Supply the');
+      console.error('  organisation config before collecting - see docs/SETUP.md.');
+      return 2;
+    }
     console.log(fixture ? 'Collecting (FIXTURE MODE - no real system is contacted):' : 'Collecting:');
     const result = await runPipeline({ config, fixture });
     console.log('');

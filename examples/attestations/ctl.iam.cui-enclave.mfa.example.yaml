@@ -1,0 +1,42 @@
+# EXAMPLE. Copy to attestations/<control_id>.yaml and make it true.
+#
+# Evidence for a control that cannot be queried.
+#
+# AWS Identity Center exposes no per-user MFA state through any public API. Verified against the SDK
+# rather than assumed: neither @aws-sdk/client-identitystore nor @aws-sdk/client-sso-admin exports a
+# single command matching /mfa|device|credential/. This is not a collector somebody has yet to write.
+control_id: ctl.iam.cui-enclave.mfa
+
+attested_by: "Ada Lovelace"
+role: "Security Owner"
+attested_at: 2026-08-21
+expires_at: 2026-11-21
+
+statement: >-
+  Every one of the 1 active workforce identities in the enclave Identity Center store has a
+  multi-factor authentication device registered, and none can complete console sign-in with a
+  password alone.
+
+basis: >-
+  Read the MFA devices panel for each user in the Identity Center console on 2026-08-21, and
+  confirmed the instance-level MFA setting requires a device at every sign-in rather than only on
+  untrusted networks.
+
+why_no_query: >-
+  Identity Center publishes no per-user MFA enrolment through any public API, confirmed against the
+  identitystore and sso-admin SDKs. Federating to an external IdP would make it queryable via the
+  Entra or Okta collector, but that is a boundary change rather than a collector.
+
+method: console-review
+
+# Copied verbatim from the control record. The validator refuses a paraphrase, which it did on the
+# first attempt at this file - an attestation about a subtly different population is not evidence
+# for this control.
+population_definition: >-
+  All human identities in the CUI enclave identity provider with status active, excluding service
+  principals and excluding break-glass accounts, which are a separate control with their own
+  population and their own compensating monitoring.
+
+total: 1
+passing_count: 1
+failing: []

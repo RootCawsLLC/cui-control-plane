@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/attestation.schema.json",
+  "title": "Attestation",
+  "description": "Evidence for a control that genuinely has no query behind it. A documented manual procedure on a defined cadence is legitimate evidence - evidence-pipeline section 5 says so explicitly - and without a way to express it, every control whose system exposes no API sits withheld forever and the inventory silently narrows to whatever happens to have a REST endpoint. AWS Identity Center publishes no per-user MFA state at all; that is not a gap somebody can close by trying harder. What is NOT legitimate is letting an attestation look like telemetry, so every field here exists to keep the two distinguishable: a named human, a stated basis, a mandatory expiry, and a confidence tier that can never reach the one a query earns.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "control_id",
+    "attested_by",
+    "role",
+    "attested_at",
+    "expires_at",
+    "statement",
+    "basis",
+    "method",
+    "population_definition",
+    "total",
+    "passing_count",
+    "failing"
+  ],
+  "properties": {
+    "control_id": { "type": "string", "pattern": "^ctl\\.[a-z0-9.-]+$" },
+    "attested_by": {
+      "description": "A named person. Not a team, not a role, not an alias - an attestation is somebody putting their name to a claim, and 'the security team attests' is nobody attesting. The validator refuses obvious placeholders.",
+      "type": "string",
+      "minLength": 3
+    },
+    "role": { "type": "string", "minLength": 2 },
+    "attested_at": { "type": "string", "format": "date" },
+    "expires_at": {
+      "description": "MANDATORY, and enforced. An attestation without an expiry is a claim that quietly becomes false - the same defect as an exception with no expiry, which this repository already refuses. Past its expiry the control is WITHHELD, never failed: the claim has gone stale, which is not the same as the control having broken.",
+      "type": "string",
+      "format": "date"
+    },
+    "statement": {
+      "description": "What is being attested, quantified over the population the control defines. Same discipline as a control assertion: 'MFA is enabled' is not a statement, 'every one of the 4 workforce identities has a phishing-resistant factor enrolled' is.",
+      "type": "string",
+      "minLength": 20
+    },
+    "basis": {
+      "description": "HOW the person knows - what they actually looked at, when. This is the field an assessor reads to decide whether to believe the attestation, and it is the one that makes a lazy attestation visibly lazy.",
+      "type": "string",
+      "minLength": 20
+    },
+    "method": {
+      "description": "console-review is somebody reading a screen. vendor-report is a report from the system owner. sampled-inspection is explicitly a sample and caps the tier lower still, because a sample is not a population and this repository does not pretend otherwise.",
+      "type": "string",
+      "enum": ["console-review", "vendor-report", "sampled-inspection", "process-walkthrough"]
+    },
+    "population_definition": {
+      "description": "Must match the control record's wording. Drift between the two is a finding, exactly as it is for a query_ref - an attestation about a different population than the control defines is not evidence for that control.",
+      "type": "string",
+      "minLength": 1
+    },
+    "total": { "type": "integer", "minimum": 0 },
+    "passing_count": { "type": "integer", "minimum": 0 },
+    "failing": {
+      "description": "Enumerated, exactly as a queried assertion must. An attestation claiming failures it cannot name is an opinion; the whole point of the population discipline is that the exceptions are identified so somebody can work them.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subject_id", "reason"],
+        "properties": {
+          "subject_id": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "first_observed": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "why_no_query": {
+      "description": "Why this cannot be a query. Required so an attestation is a considered choice rather than the easy path: 'the vendor exposes no API for it' is a reason, 'we have not built the collector yet' is a backlog item and should not become a permanent attestation.",
+      "type": "string",
+      "minLength": 20
+    },
+    "evidence_ref": {
+      "description": "Pointer to the artifact the attester looked at - a ticket, a report, a document store path. Never the artifact itself: this repository does not become a screenshot locker.",
+      "type": "string"
+    },
+    "supersedes": { "type": ["string", "null"] }
+  }
+}

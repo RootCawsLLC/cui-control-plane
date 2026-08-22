@@ -130,8 +130,12 @@ test('nothing in the tool deletes evidence', () => {
       if (entry.isDirectory()) walk(full);
       else if (entry.name.endsWith('.mjs')) {
         const text = readFileSync(full, 'utf8');
-        for (const call of ['unlinkSync', 'rmSync', 'rmdirSync', 'unlink(', 'rm(']) {
-          if (text.includes(call)) offenders.push(`${entry.name}: ${call}`);
+        // Word-boundary anchored, NOT a bare substring. 'rm(' as a substring matches norm(,
+        // confirm(, transform(, perform( - it fired on a legitimate norm() helper, and a guard that
+        // cries wolf is a guard somebody deletes. \b before the name means the preceding character
+        // cannot be a word character, so fs.rm( and rm( match while norm( does not.
+        for (const call of ['unlinkSync', 'rmSync', 'rmdirSync', 'unlink', 'rm']) {
+          if (new RegExp('\\b' + call + '\\s*\\(').test(text)) offenders.push(`${entry.name}: ${call}(`);
         }
       }
     }

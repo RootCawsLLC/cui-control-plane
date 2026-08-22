@@ -83,3 +83,9 @@ variable "inputs_prefix" {
   type        = string
   default     = "inbox"
 }
+
+variable "attestations_prefix" {
+  description = "Key prefix holding manual attestations - evidence for controls with no query behind them. Read only: a collection run has no business authoring the claims it is collecting."
+  type        = string
+  default     = "attestations"
+}

@@ -5,6 +5,7 @@ import { ROOT, loadControls } from './lib/load.mjs';
 import { Warehouse } from './warehouse.mjs';
 import { selectCollectors } from './collectors/registry.mjs';
 import { TABLES, populationTablesFor } from './collectors/tables.mjs';
+import { loadAttestations, validateAttestation, assertionFromAttestation } from './attestation.mjs';
 
 /**
  * collect -> load -> build -> assert.
@@ -112,9 +113,43 @@ export async function runPipeline({
   const assertions = [];
   const withheld = [];
 
+  // Attestations cover controls that genuinely cannot be queried. They are checked BEFORE the
+  // per-control loop so a valid one can rescue a control the collectors could not reach - but a
+  // fixture run never consults them, because attested evidence is real evidence and mixing it into
+  // a synthetic run would put an unstamped real assertion into a fixture history.
+  const attestations = new Map();
+  const attestationNotes = [];
+  if (!fixture) {
+    for (const { file, doc } of loadAttestations()) {
+      const check = validateAttestation(doc, { controls });
+      if (!check.ok) {
+        attestationNotes.push(`${file}: invalid - ${check.errors[0]}`);
+        continue;
+      }
+      if (check.expired) {
+        attestationNotes.push(
+          `${file}: EXPIRED ${doc.expires_at} - ${doc.control_id} stays withheld. A stale claim is not a failing control.`
+        );
+        continue;
+      }
+      attestations.set(doc.control_id, doc);
+    }
+  }
+
   for (const control of controls) {
     const model = control.query_ref.split('/').pop().replace('.sql', '');
     if (unusable.has(control.control_id)) {
+      // A valid, unexpired attestation is evidence where no query exists. It never overrides a
+      // query that COULD have run and failed - it only fills a hole, and it arrives capped at tier
+      // 2 with source_kind: attested so nothing downstream mistakes it for telemetry.
+      const attested = attestations.get(control.control_id);
+      if (attested) {
+        assertions.push(assertionFromAttestation(attested, { asOf }));
+        attestationNotes.push(
+          `${control.control_id}: asserted from attestation by ${attested.attested_by}, expires ${attested.expires_at}`
+        );
+        continue;
+      }
       withheld.push({ control_id: control.control_id, reasons: unusable.get(control.control_id) });
       continue;
     }
@@ -452,6 +487,12 @@ export function formatPipeline(result) {
       out.push(`    ${w.control_id}`);
       for (const r of w.reasons) out.push(`      ${r}`);
     }
+  }
+
+  if (result.attestationNotes?.length > 0) {
+    out.push('');
+    out.push('  Attestations (manual evidence, capped at confidence tier 2):');
+    for (const n of result.attestationNotes) out.push(`    ${n}`);
   }
 
   if (result.skipped.length > 0) {

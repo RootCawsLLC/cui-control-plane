@@ -175,6 +175,7 @@ data "aws_iam_policy_document" "collect" {
         "${var.evidence_prefix}/*", var.evidence_prefix,
         "${var.config_prefix}/*", var.config_prefix,
         "${var.inputs_prefix}/*", var.inputs_prefix,
+        "${var.attestations_prefix}/*", var.attestations_prefix,
       ]
     }
   }
@@ -192,6 +193,7 @@ data "aws_iam_policy_document" "collect" {
     resources = [
       "${aws_s3_bucket.evidence.arn}/${var.config_prefix}/*",
       "${aws_s3_bucket.evidence.arn}/${var.inputs_prefix}/*",
+      "${aws_s3_bucket.evidence.arn}/${var.attestations_prefix}/*",
     ]
   }
 

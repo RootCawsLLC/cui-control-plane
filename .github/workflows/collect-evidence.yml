@@ -85,6 +85,16 @@ jobs:
           aws s3 sync "s3://${{ vars.CCP_EVIDENCE_BUCKET }}/inbox" inbox --only-show-errors
           echo "inputs fetched: $(find inbox -name '*.csv' | wc -l) file(s)"
 
+      # Attestations are org evidence for controls with no query behind them. Same reason as the
+      # config and the inputs: they name a person and describe one account, so they live in the
+      # private bucket rather than a public repository. Without them the attested controls are
+      # withheld, which is correct but loses evidence that legitimately exists.
+      - name: Fetch attestations
+        run: |
+          mkdir -p attestations
+          aws s3 sync "s3://${{ vars.CCP_EVIDENCE_BUCKET }}/attestations" attestations --only-show-errors
+          echo "attestations fetched: $(find attestations -name '*.yaml' | wc -l)"
+
       # Restore history BEFORE collecting. first_observed is resolved against prior snapshots, so a
       # run that starts from an empty .evidence would date every existing failure to today and reset
       # every variance duration to zero.

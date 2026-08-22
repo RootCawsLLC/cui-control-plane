@@ -19,29 +19,63 @@
     "confidence_tier"
   ],
   "properties": {
-    "control_id": { "type": "string", "pattern": "^ctl\\.[a-z0-9.-]+$" },
-    "as_of": { "type": "string", "format": "date-time" },
-    "population_definition": { "type": "string", "minLength": 1 },
-    "source_system": { "type": "string", "minLength": 1 },
-    "query_ref": { "type": "string", "minLength": 1 },
+    "control_id": {
+      "type": "string",
+      "pattern": "^ctl\\.[a-z0-9.-]+$"
+    },
+    "as_of": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "population_definition": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_system": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_ref": {
+      "type": "string",
+      "minLength": 1
+    },
     "total": {
       "description": "The denominator, and itself a control metric. Alert on denominator movement, not just on failures: if total drifts unexpectedly then the asset inventory - a Decision Support Control - failed before this control did.",
       "type": "integer",
       "minimum": 0
     },
-    "passing_count": { "type": "integer", "minimum": 0 },
-    "failing_count": { "type": "integer", "minimum": 0 },
+    "passing_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failing_count": {
+      "type": "integer",
+      "minimum": 0
+    },
     "failing": {
       "description": "Always fully enumerated. It is the work queue and the variance record; first_observed is what turns a snapshot into a clock.",
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["subject_id", "reason", "first_observed"],
+        "required": [
+          "subject_id",
+          "reason",
+          "first_observed"
+        ],
         "properties": {
-          "subject_id": { "type": "string", "minLength": 1 },
-          "reason": { "type": "string", "minLength": 1 },
-          "first_observed": { "type": "string", "format": "date-time" },
+          "subject_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "first_observed": {
+            "type": "string",
+            "format": "date-time"
+          },
           "variance": {
             "$ref": "https://github.com/RootCawsLLC/cui-control-plane/schemas/variance.schema.json"
           }
@@ -50,8 +84,13 @@
     },
     "passing": {
       "description": "Optional, null by default. Populate when the population is small, when an assessor asks, or when the passing set is itself the artifact. Enumerating 400,000 passing rows into every record is storage, not evidence.",
-      "type": ["array", "null"],
-      "items": { "type": "object" }
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object"
+      }
     },
     "coverage_basis": {
       "description": "Exclusions stated explicitly. Exceptions reduce coverage; they do not vanish from the denominator, and an exception with no expiry is an undocumented control change.",
@@ -67,6 +106,14 @@
     "fixture": {
       "description": "True marks synthetic data. Fixture assertions are stamped NOT REAL EVIDENCE in every artifact generated from them, and the SPRS scorer refuses to report a submittable score from them.",
       "type": "boolean"
+    },
+    "source_kind": {
+      "description": "How this assertion was obtained. `queried` means a reproducible query over the population - the evidence is the query, and an assessor can re-run it. `attested` means a named human looked and said so, which is legitimate where no API exists but is never the same thing: it is capped at confidence tier 2, it expires, and it is marked here so no downstream artifact has to guess which it is looking at.",
+      "type": "string",
+      "enum": [
+        "queried",
+        "attested"
+      ]
     }
   }
 }

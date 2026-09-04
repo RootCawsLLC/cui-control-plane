@@ -1,0 +1,26 @@
+{
+  "name": "cui-control-plane-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hosted demo GUI for cui-control-plane. Runs the real tool out-of-process against the bundled synthetic fixtures and renders the one control inventory, the NDAA regimes attached as crosswalk edges, the derived SPRS score, and the emitted OSCAL O1-O5 package. Never contacts a real system.",
+  "scripts": {
+    "dev": "next dev -p 3230",
+    "build": "next build",
+    "start": "next start -p 3230",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.5.25",
+    "cui-control-plane": "file:..",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.9",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "typescript": "5.5.3"
+  }
+}

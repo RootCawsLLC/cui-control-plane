@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+.git
+web/.env*.local
+**/*.log
+source.zip
+infra-web
+docs
+.evidence
+.evidence-*
+.warehouse
+out
+attestations
+inbox

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>cui-control-plane — one inventory for a CUI boundary</title>
+<meta name="description" content="One control inventory for a DoD CUI boundary. How to run the fixture pipeline, when to use it, and how to point it at your organisation.">
+<style>
+:root{
+  --bg:#FAFAF8;--panel:#FFFFFF;--panel-2:#F5F1E8;--border:#e0e0e0;
+  --ink:#1a1a1a;--ink-2:#444444;--ink-3:#666666;--accent:#6B63B5;--accent-soft:#efedf9;
+  --breach:#B4413F;--held:#2F7D53;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1a1a;--panel:#242424;--panel-2:#2d2d2d;--border:#333333;
+    --ink:#f0f0f0;--ink-2:#c0c0c0;--ink-3:#999999;--accent:#8B7FD6;--accent-soft:#2b2740;
+    --breach:#E58A88;--held:#7FC79B;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;padding:2.5rem 1.25rem 4rem;background:var(--bg);color:var(--ink);
+  font:15px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:46rem;margin:0 auto}
+h1{font-size:1.7rem;margin:0 0 .35rem;letter-spacing:-.01em}
+.thesis{color:var(--ink-2);margin:0 0 1.25rem;font-size:1.02rem}
+.thesis b{color:var(--ink)}
+nav.toc{display:flex;flex-wrap:wrap;gap:.4rem .75rem;margin:0 0 2rem;font-size:.82rem}
+nav.toc a{color:var(--accent);text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);
+  margin:2.25rem 0 .75rem;font-weight:600}
+h3{font-size:1rem;margin:1.35rem 0 .4rem}
+p,li{color:var(--ink-2)}
+p{margin:0 0 .85rem}
+ul,ol{margin:.2rem 0 1rem;padding-left:1.2rem}
+li{margin:.25rem 0}
+.note{background:var(--panel-2);border-radius:8px;padding:.85rem 1.05rem;font-size:.89rem;
+  color:var(--ink-2);margin:1.25rem 0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:0 0 1rem}
+@media (max-width:640px){.pair{grid-template-columns:1fr}}
+.box{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:.85rem 1rem}
+.box h3{margin:.1rem 0 .4rem}
+.box.use{border-left:4px solid var(--held)}
+.box.dont{border-left:4px solid var(--breach)}
+pre{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;
+  padding:.85rem 1rem;overflow-x:auto;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--ink);margin:0 0 1rem}
+code{font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin:0 0 1rem}
+th,td{text-align:left;vertical-align:top;padding:.45rem .5rem .45rem 0;border-bottom:1px solid var(--border)}
+th{color:var(--ink-3);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+.card{display:block;background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--accent);
+  border-radius:9px;padding:.9rem 1.1rem;margin-bottom:.6rem}
+.card .t{font-weight:600;margin-bottom:.15rem;color:var(--ink)}
+.card .d{color:var(--ink-3);font-size:.87rem}
+footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);
+  color:var(--ink-3);font-size:.84rem}
+footer a{color:var(--accent)}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>cui-control-plane</h1>
+<p class="thesis">One control inventory for a DoD CUI boundary. Five NDAA-driven regimes attach as
+<b>crosswalk edges</b>, not five programmes. The pipeline withholds a control rather than reporting
+0 of 0 when no collector can speak. This page is how you run it, and how you point it at a real estate.</p>
+
+<nav class="toc" aria-label="On this page">
+  <a href="#what">What it does</a>
+  <a href="#when">When to use it</a>
+  <a href="#how">How to use it</a>
+  <a href="#org">Take it into your org</a>
+  <a href="#demo">What the fixture run shows</a>
+  <a href="#limits">What it refuses</a>
+</nav>
+
+<h2 id="what">What it does</h2>
+<p>“NDAA compliance” is not a programme. It resolves to CMMC Level 2, DFARS 7012 incident reporting, Section 889 telecom representation, the 1260H Chinese Military Companies list, and forthcoming FY2026 harmonisation — plus FASCSA sitting adjacent and routinely conflated with them. Building five parallel programmes produces five populations of the same assets and no way to answer “how exposed are we.”</p>
+<p>This repository keeps <b>one</b> inventory. Each regime is a crosswalk: an identifier, a confidence, and a written basis. Never framework text. The pipeline collects, loads a local DuckDB warehouse, asserts every control, and emits OSCAL O1–O5 with deterministic v5 UUIDs. Variance Frequency and Variance Duration come off the assertion history, which is what makes it a risk instrument rather than a compliance cost centre. SPRS is derived from those same records — and refused when the weight table is empty.</p>
+
+<h2 id="when">When and where to use it</h2>
+<div class="pair">
+  <div class="box use">
+    <h3>Use it when</h3>
+    <ul>
+      <li>You handle CUI and need one system of record for CMMC L2, 7012, 889, and 1260H — not four binders.</li>
+      <li>You are a DIB subcontractor who has been told to “automate NDAA compliance” and need a place to start that will not invent a pass.</li>
+      <li>You need OSCAL that re-exports byte-identically, so the package is a git diff, not a blob that changes every run.</li>
+      <li>You want GRC engineers to practise the discipline of withholding: no collector, no claim.</li>
+    </ul>
+  </div>
+  <div class="box dont">
+    <h3>Do not use it when</h3>
+    <ul>
+      <li>You need a FedRAMP 20x continuous-monitoring harness. That is <a href="https://rootcawsllc.github.io/ksi-harness/">ksi-harness</a>. CMMC is out of scope there on purpose.</li>
+      <li>You want a submitted SPRS score out of the box. The real weight table ships empty. A guessed weight is a wrong score in a Government system of record.</li>
+      <li>You expect six operating controls on day one. <code>status</code> is lifecycle in the environment. Nothing here is operating until it is instrumented against real telemetry and observed holding.</li>
+    </ul>
+  </div>
+</div>
+
+<h2 id="how">How to use it</h2>
+<p>Node 22+. No Python, no warehouse product, no credentials, nothing contacts a real system. Read time for the guided setup is about fifteen minutes; the first real run is an afternoon.</p>
+<p><b>0. Run it before you change anything.</b></p>
+<pre>git clone https://github.com/RootCawsLLC/cui-control-plane.git
+cd cui-control-plane
+npm install
+npm run pipeline</pre>
+<p>That collects from bundled fixtures, builds a local DuckDB warehouse, evaluates every control, and writes assertion records. You should see <b>five controls asserted and one withheld</b>. The withheld one is the lesson: no collector populates its source, so the tool refuses to say anything rather than reporting 0 of 0 passing.</p>
+<p>Then walk the rest of the chain:</p>
+<pre>npm run emit -- --assertions .evidence
+npm run variance
+npm run coverage
+npm run demo</pre>
+<p><code>demo</code> is the eight-step walkthrough: validate, coverage, SPRS against the empty real weights (it refuses), SPRS against fixture weights (arithmetic runs; the result is never called submittable), variance, policy (generates nothing while no control is operating), the 889 representation (blocked by unresolved manufacturers), and OSCAL emit. Every refusal is the point of the step.</p>
+<p><b>1. Make it yours.</b> Twelve questions, every one with a working default.</p>
+<pre>npm run init      # writes gitignored ccp.config.yaml — the only file you edit
+npm run doctor    # what is configured, what is missing, which controls will be withheld</pre>
+<p><code>doctor</code> is the command you will run most. It is the answer to “am I set up yet?”</p>
+<p><b>2. The three decisions only you can make.</b></p>
+<table>
+  <thead><tr><th>Decision</th><th>Default, and why</th></tr></thead>
+  <tbody>
+    <tr><td>CUI boundary</td><td>Pick <code>enclave</code> unless leadership has funded enterprise scope. If you do not know, that is a finding, not a config value to guess.</td></tr>
+    <tr><td>Supplier master</td><td>One CSV of every supplier. Population for both 1260H and 889. You do not need an API.</td></tr>
+    <tr><td>1260H list</td><td>This repo will not ship it. A stale copy reads as “screened” when it is not. Export the current DoD list on a calendar.</td></tr>
+  </tbody>
+</table>
+<p><b>3. Wire the first real source.</b> Do CSV today. Drop exports in <code>inbox/</code>. The asset inventory needs <i>two</i> sources — CMDB and cloud — because the control is a reconciliation. Cloud-only reports every asset as unmanaged; CMDB-only can never find an unmanaged asset. Both look like measurements. Neither is one.</p>
+<p>The full walkthrough — Entra, Okta, AWS Identity Center, AWS IAM, Azure — is <a href="https://github.com/RootCawsLLC/cui-control-plane/blob/main/docs/SETUP.md">docs/SETUP.md</a>.</p>
+
+<h2 id="org">Take it into your organisation</h2>
+<ol>
+  <li><b>One inventory.</b> Do not stand up a CMMC programme, an 889 programme, and a 1260H programme. Write the control once. Attach regimes as edges.</li>
+  <li><b>Split by layer when owner, cost, threat model, or failure mode differs.</b> The MFA pair is the worked example: enclave MFA is in the assessment boundary; corporate-IT MFA is not, and claims no 800-171 requirement. One “MFA” record spanning both is the munged control that makes an SSP indefensible.</li>
+  <li><b>Absent data is recorded as absent.</b> Unresolved manufacturer fails. Superseded list edition fails. “Could not determine” is never a pass. Fixture evidence stamps every downstream artefact <code>NOT REAL EVIDENCE</code>.</li>
+  <li><b>Policy last.</b> <code>ccp policy</code> generates nothing until a control is operating — observed holding, not planned. A policy for a control that is not yet holding is documented misalignment.</li>
+  <li><b>Keep real evidence out of the repo.</b> Bundles name accounts, roles, and failing resources. Point collection at a private store. The fixture path is how you learn the tool.</li>
+</ol>
+<p>Six controls ship as the spine, not as a finished CMMC L2 set. <code>npm run coverage</code> prints the backlog against 110 requirements. Adding a control is: write the YAML with a population definition from the start, write the dbt model, union it, add a stamped fixture, validate. See <a href="https://github.com/RootCawsLLC/cui-control-plane/blob/main/AGENTS.md">AGENTS.md</a>.</p>
+
+<h2 id="demo">What the fixture run shows</h2>
+<p>You cannot press a button on this page and get a live warehouse — the tool is a CLI. What you can do is run the same fixture path the documentation claims, on your laptop, in five minutes, and get the same refusals.</p>
+<div class="card">
+  <div class="t">Five asserted, one withheld</div>
+  <div class="d">The withheld control is the demonstration. No collector, no population, no 0-of-0 pass.</div>
+</div>
+<div class="card">
+  <div class="t">SPRS refuses on the real weight file</div>
+  <div class="d">The 5/3/1 scheme is encoded. The per-requirement weights are not guessed. Fixture weights produce a number that is never called submittable.</div>
+</div>
+<div class="card">
+  <div class="t">Policy generates nothing</div>
+  <div class="d">Zero controls are <code>operating</code>. The command names every control it skipped and why.</div>
+</div>
+<div class="card">
+  <div class="t">889 representation blocked</div>
+  <div class="d">Unresolved manufacturers. False Claims Act exposure attaches to the representation itself, so “we could not determine three components” is a basis for representing nothing yet.</div>
+</div>
+<div class="card">
+  <div class="t">OSCAL O1–O5, byte-identical on re-export</div>
+  <div class="d">Deterministic v5 UUIDs. All eight artefacts validate against NIST’s oscal-cli in CI. Title and remarks say NOT REAL EVIDENCE.</div>
+</div>
+
+<h2 id="limits">What it refuses</h2>
+<div class="note">
+  <b>Never emit a claim the evidence does not support.</b> That is the one rule.
+  Unresolved manufacturers fail. A supplier screened against a superseded list fails.
+  OSCAL findings are never rounded up — three failures out of 1,842 is <code>not-satisfied</code>.
+  Fixture stamps travel into every artefact. Near-zero overlap between two sources that
+  claimed to describe the same estate is reported as a source error, not 81 unmanaged assets.
+  The full list of refusals is in the
+  <a href="https://github.com/RootCawsLLC/cui-control-plane#what-the-code-refuses-to-do">README</a>,
+  and each one is a test.
+</div>
+
+<footer>
+  Source, setup, ADRs:
+  <a href="https://github.com/RootCawsLLC/cui-control-plane">github.com/RootCawsLLC/cui-control-plane</a>
+  · Portfolio:
+  <a href="https://xnasusx.github.io/portfolio/#builds">xnasusx.github.io/portfolio</a><br>
+  Copyright &copy; 2026 RootCaws LLC &middot; Apache-2.0
+</footer>
+
+</div></body>
+</html>

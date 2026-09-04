@@ -5,6 +5,9 @@ edges rather than as five compliance programmes. The pipeline that produces the 
 also produces Variance Frequency and Variance Duration on every control, which is what makes it a
 risk instrument rather than a compliance cost centre.
 
+**Live guide** — what it does, when to use it, how to run the fixture pipeline, and how to
+point it at a real estate: https://rootcawsllc.github.io/cui-control-plane/
+
 ## Start here
 
 ```bash

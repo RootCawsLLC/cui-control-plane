@@ -1,0 +1,31 @@
+{
+  "control_id": "ctl.ir.dibnet.incident-reporting",
+  "as_of": "2026-08-19T00:00:00Z",
+  "population_definition": "Every incident record classified as a cyber incident affecting a covered contractor information system or the CUI it holds, within the reporting window. Incidents triaged as non-reportable remain in the population with their classification and its basis.",
+  "source_system": "incident response platform joined to DIBNet submission receipts",
+  "query_ref": "models/controls/ctl_ir_dibnet_incident_reporting.sql",
+  "total": 3,
+  "passing_count": 2,
+  "failing_count": 1,
+  "failing": [
+    {
+      "subject_id": "INC-2026-0417",
+      "reason": "submitted_after_72h_from_discovery",
+      "first_observed": "2026-07-22T00:00:00Z",
+      "variance": {
+        "variance_started_at": "2026-07-16T02:11:00Z",
+        "variance_detected_at": "2026-07-19T08:30:00Z",
+        "remediation_started_at": "2026-07-19T10:05:00Z",
+        "remediation_completed_at": "2026-07-22T14:48:00Z",
+        "started_at_basis": "source_system"
+      }
+    }
+  ],
+  "passing": [
+    { "subject_id": "INC-2026-0388", "note": "DIBNet submission accepted 41h after discovery" },
+    { "subject_id": "INC-2026-0402", "note": "triaged non-reportable; classification basis recorded and retained in the population" }
+  ],
+  "coverage_basis": "3 of 3 incidents in the reporting window affecting a covered contractor information system or the CUI it holds. passing[] is enumerated here because the population is small and the passing set is itself the artifact an assessor asks for. INC-2026-0417 was accepted 78.3 hours after discovery against the 72-hour clause clock; the full occurrence-to-submission window was 156.6 hours, and the shorter figure is the one the clause tests.",
+  "confidence_tier": 4,
+  "fixture": true
+}

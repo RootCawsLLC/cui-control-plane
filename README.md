@@ -8,6 +8,10 @@ risk instrument rather than a compliance cost centre.
 **Live guide** — what it does, when to use it, how to run the fixture pipeline, and how to
 point it at a real estate: https://rootcawsllc.github.io/cui-control-plane/
 
+**Run it in your browser** — a hosted demo runs the real pipeline against fixtures: one control
+inventory, five NDAA regimes as crosswalk edges, OSCAL O1–O5 emitted and the SPRS score derived
+from assertion records, no install: https://d22sdmcsqc.us-west-2.awsapprunner.com
+
 ## Start here
 
 ```bash

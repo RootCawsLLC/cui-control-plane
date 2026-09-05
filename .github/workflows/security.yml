@@ -1,0 +1,30 @@
+name: security
+
+# Product-security gate for the web GUI — the same OWASP-based pre-deploy gate
+# used across these tools. Blocks on any FAIL (secrets, unsafe SQL, XSS sinks,
+# missing headers, unrate-limited public POST, public S3/RDS, vulnerable deps,
+# stale dependency floors, LLM output sinks).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-security-gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Product security gate
+        run: npm run security-gate

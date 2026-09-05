@@ -48,8 +48,13 @@ ENV CCP_ASSERTIONS_DIR=/repo/web/fixtures/assertions
 
 # Bring the whole built tree (tool src + node_modules, web .next + node_modules,
 # scripts, fixtures). The web/node_modules/cui-control-plane symlink points at
-# /repo, which exists at the same path here, so it resolves.
-COPY --from=build /repo /repo
+# /repo, which exists at the same path here, so it resolves. Owned by the
+# built-in non-root `node` user so the runtime can read (and Next can write its
+# .next/cache) without running as root.
+COPY --chown=node:node --from=build /repo /repo
+
+# Drop root: the runtime only reads bundled fixtures and serves HTTP.
+USER node
 
 WORKDIR /repo/web
 EXPOSE 3230

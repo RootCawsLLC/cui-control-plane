@@ -5,7 +5,7 @@
 ## Context
 
 "Build a GRC engineering solution for NDAA compliance" does not resolve to one thing. The National
-Defense Authorization Act is enabling legislation: it authorises and directs rulemaking, and does
+Defense Authorization Act is enabling legislation: it authorizes and directs rulemaking, and does
 not itself specify controls, evidence, or assessment mechanics. What a DoD prime handling CUI
 actually faces is five distinct, independently-implemented regimes, plus one adjacent statute that
 is routinely conflated with them:
@@ -16,10 +16,10 @@ is routinely conflated with them:
 | Safeguarding CDI + incident reporting | pre-dates the NDAA, reinforced since | DFARS 252.204-7012 |
 | Covered telecom / video surveillance | FY2019 NDAA §889 | FAR 52.204-24 / -25 |
 | Chinese Military Companies list | FY2021 NDAA §1260H, amended since | DoD-published list plus implementing clause |
-| Cyber requirement harmonisation | FY2026 NDAA §866 | forthcoming consolidated framework |
+| Cyber requirement harmonization | FY2026 NDAA §866 | forthcoming consolidated framework |
 | *(adjacent, not an NDAA section)* Federal Acquisition Supply Chain Security Act | FASCSA 2018 | FAR subpart 4.23, FASC exclusion orders |
 
-The obvious response — one programme per regime — is wrong in a way that is expensive and slow to
+The obvious response — one program per regime — is wrong in a way that is expensive and slow to
 undo. It produces five populations of the same assets, five evidence collections, five sets of
 drift, and no way to answer "how exposed are we" across any of it.
 
@@ -45,8 +45,8 @@ Concretely:
 
 ## Consequences
 
-- Adding a regime is a crosswalk column, not a programme. This is the concrete payoff when §866
-  harmonisation lands: whatever DoD's consolidated framework turns out to be, it attaches to
+- Adding a regime is a crosswalk column, not a program. This is the concrete payoff when §866
+  harmonization lands: whatever DoD's consolidated framework turns out to be, it attaches to
   controls that already exist.
 - The supplier master is built **once**, in Phase 0, and serves both the §1260H control and the
   §889 control. Neither owns it.

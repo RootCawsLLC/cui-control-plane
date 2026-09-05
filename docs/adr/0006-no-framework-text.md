@@ -14,7 +14,7 @@ reasons not to, of increasing force:
    perfectly usable as crosswalk anchors.
 2. **Staleness.** A hand-copied requirement is a statement that goes stale while continuing to read
    as current. Regimes in this space are actively moving: the §1260H list expanded in June 2026, and
-   §866 harmonisation is still forthcoming.
+   §866 harmonization is still forthcoming.
 3. **It is not ours.** The assertion text is the highest-value writing in the inventory precisely
    because it is ours — a testable claim over a defined population, which a query can prove. A
    paraphrase of somebody else's requirement is neither.

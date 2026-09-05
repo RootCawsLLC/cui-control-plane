@@ -140,7 +140,7 @@ sampling design to describe. The assessment plan for a query is the query.
   "screened against a superseded edition" is a control failure here and not a data-quality note.
 - **§889 annual representation regenerates** from the live telecom-equipment attestation control
   instead of being re-collected as a standalone form each year.
-- **§866 harmonisation** is the argument for having built on crosswalked canonical controls in the
+- **§866 harmonization** is the argument for having built on crosswalked canonical controls in the
   first place: whatever DoD's consolidated framework turns out to be, it lands as a new crosswalk
   column against controls that already exist, not a rebuild. That is worth saying explicitly to
   whoever is funding this.
@@ -153,17 +153,17 @@ sampling design to describe. The assessment plan for a query is the query.
 | 2–8 | Control records, SCF crosswalk, OSCAL O1/O2 | Boundary decision |
 | 6–14 | Pipeline: asset inventory → MFA → remaining IAM/data/network → entity screening → telecom attestation → IR | Control records |
 | 10–16 | OSCAL O3, O4, O5 and SPRS scoring | Pipeline producing assertions |
-| Ongoing | List monitoring, representation regeneration, harmonisation crosswalk maintenance | Everything above operating |
+| Ongoing | List monitoring, representation regeneration, harmonization crosswalk maintenance | Everything above operating |
 
 ## What this buys beyond the assessment
 
 The same pipeline that produces the assessment package also emits Variance Frequency and Variance
 Duration on every control, which are direct inputs to loss event frequency for the scenarios that
 actually matter here — a CUI breach, a missed 1260H screening, an undetected covered-telecom
-component. That is the difference between building this as a compliance cost centre and building it
+component. That is the difference between building this as a compliance cost center and building it
 as a risk instrument that happens to also satisfy an assessor.
 
-If quantifying those scenarios becomes useful — sizing exposure from a CUI incident, or prioritising
+If quantifying those scenarios becomes useful — sizing exposure from a CUI incident, or prioritizing
 which of the 110 requirements to harden first by risk-reduction-per-dollar — that work picks up
 directly from the assertion records this plan produces, with no re-architecture. The `cost` and
 `measurement` blocks on each control record are the hooks; they are deliberately empty rather than

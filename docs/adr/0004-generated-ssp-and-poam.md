@@ -14,7 +14,7 @@ is an hour spent creating the exact defect the assessment looks for.
 **The POA&M.** Conventionally it says "this is broken, here is a target date". That is a compliance
 artifact. It carries no information about how long the control has been broken, how long it took to
 notice, or how long it sat before anyone acted — which is the information that would tell you
-whether the problem is monitoring, prioritisation, or capacity.
+whether the problem is monitoring, prioritization, or capacity.
 
 ## Decision
 
@@ -36,7 +36,7 @@ and the `started_at_basis`, plus the three derived segments:
 | Segment | FAIR-CAM function | The fix is a… |
 |---|---|---|
 | started → detected | Control Monitoring | cadence / coverage problem |
-| detected → remediation started | Treatment Selection & Prioritisation | prioritisation / ownership problem |
+| detected → remediation started | Treatment Selection & Prioritization | prioritization / ownership problem |
 | remediation started → completed | Implementation | capacity / tooling problem |
 
 That converts the POA&M from a compliance artifact into a risk artifact carrying VF and VD.
@@ -63,7 +63,7 @@ that is where the clause legally starts it.
   `operating` is refused by the validator: build the control, instrument it, observe it holding,
   *then* generate the expectation from it.
 - The SSP will contain honest gaps — controls with no assertion yet say so explicitly rather than
-  describing an intended state. That is the correct behaviour for a greenfield build and it is much
+  describing an intended state. That is the correct behavior for a greenfield build and it is much
   better to hand an assessor than confident prose about something not yet running.
 - OSCAL's finding vocabulary is `satisfied` / `not-satisfied` and nothing else. Three failures out
   of 1,842 is reported as `not-satisfied`, never rounded up; the population counts ride along in

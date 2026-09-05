@@ -1,9 +1,9 @@
 # cui-control-plane
 
 One control inventory for a DoD CUI boundary. Five NDAA-driven regimes attach to it as crosswalk
-edges rather than as five compliance programmes. The pipeline that produces the assessment package
+edges rather than as five compliance programs. The pipeline that produces the assessment package
 also produces Variance Frequency and Variance Duration on every control, which is what makes it a
-risk instrument rather than a compliance cost centre.
+risk instrument rather than a compliance cost center.
 
 **A reference architecture, not an engagement.** Every assertion record under `fixtures/` is
 synthetic and stamped `NOT REAL EVIDENCE`; every artifact generated from them carries the stamp
@@ -19,7 +19,7 @@ npm run validate && npm run coverage && npm run emit
 
 ## The framing
 
-The National Defense Authorization Act is enabling legislation. It authorises and directs
+The National Defense Authorization Act is enabling legislation. It authorizes and directs
 rulemaking; it does not specify controls, evidence, or assessment mechanics. "NDAA compliance"
 resolves to five independently-implemented regimes, plus one adjacent statute that is routinely
 conflated with them:
@@ -30,12 +30,12 @@ conflated with them:
 | Safeguarding CDI + incident reporting | pre-dates the NDAA | DFARS 252.204-7012 | 72-hour DIBNet report **from discovery**, 90-day image preservation, DC3 malware submission, flow-down |
 | Covered telecom / video surveillance | FY2019 NDAA §889 | FAR 52.204-24 / -25 | Annual representation of no covered use |
 | Chinese Military Companies list | FY2021 NDAA §1260H | DoD-published list + implementing clause | No contracting with a listed entity; supply-chain diligence to catch affiliates |
-| Cyber requirement harmonisation | FY2026 NDAA §866 | forthcoming | Anticipate, do not front-run — be crosswalk-ready |
+| Cyber requirement harmonization | FY2026 NDAA §866 | forthcoming | Anticipate, do not front-run — be crosswalk-ready |
 | *(adjacent)* Supply chain security | FASCSA 2018 — **not an NDAA section** | FAR subpart 4.23 | FASC exclusion and removal orders |
 
-Building five parallel programmes against those would produce five populations of the same assets,
+Building five parallel programs against those would produce five populations of the same assets,
 five evidence collections, and no way to answer "how exposed are we" across any of it. So the whole
-repository is organised around **one** control inventory that each regime crosswalks into —
+repository is organized around **one** control inventory that each regime crosswalks into —
 [ADR 0001](docs/adr/0001-one-control-inventory.md).
 
 ## What is here
@@ -135,6 +135,6 @@ is not. SCF content is resolved at run time from a local release and never vendo
   when `ksi-harness` ADR 0004 declared it out of scope there
 - [AGENTS.md](AGENTS.md) — working rules for anyone changing this code
 
-## Licence
+## License
 
 Apache-2.0. No third-party framework content is vendored or redistributed.

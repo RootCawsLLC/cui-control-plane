@@ -26,7 +26,7 @@ crash, so the shell must not expand the pattern. Node >= 22.
 
 ## Invariants that must survive any refactor
 
-1. **No model in the evidence path.** A model may draft a dbt model or summarise findings;
+1. **No model in the evidence path.** A model may draft a dbt model or summarize findings;
    deterministic code produces every pass/fail. An LLM asserting a control passed is an assessor
    objection that cannot be won.
 2. **Populations, never samples.** Every control test returns the canonical assertion record with
@@ -51,7 +51,7 @@ crash, so the shell must not expand the pattern. Node >= 22.
 - Assertion text is ours and quantifies over a population ("every…", "no…"). A test enforces the
   quantifier. This is the highest-value writing in the repository and it is not a technical task.
 - **Frameworks attach as crosswalk edges: identifier + `confidence` + `basis` only.** Never
-  reproduce framework text, and never generate content derived from SCF — its CC BY-ND licence
+  reproduce framework text, and never generate content derived from SCF — its CC BY-ND license
   names AI-generated derivative content specifically. SCF identifiers as crosswalk anchors are fine.
 - A `confidence: low` edge is **not** coverage. It shows as `weak` and the SPRS derivation ignores it.
 - Splitting by layer is the discipline; over-splitting is the counter-discipline. If two things

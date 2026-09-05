@@ -29,7 +29,7 @@ population_definition: >-
   Every incident record in the IR system classified as a cyber incident affecting a covered
   contractor information system or the CUI it holds, within the reporting window. Incidents
   triaged as non-reportable remain in the population with their classification and the basis for
-  it, because "we decided it was not reportable" is the judgement most worth being able to review
+  it, because "we decided it was not reportable" is the judgment most worth being able to review
   later - dropping them from the denominator would make a missed classification invisible.
 source_system: incident response platform joined to DIBNet submission receipts
 query_ref: models/controls/ctl_ir_dibnet_incident_reporting.sql

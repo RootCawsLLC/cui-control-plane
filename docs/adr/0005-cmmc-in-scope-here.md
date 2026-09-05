@@ -25,7 +25,7 @@ scoping question is different in each.
 - **`ksi-harness` collects evidence against FedRAMP 20x indicators** and crosswalks transitively
   through 800-53 Rev 5. CMMC does not sit on that pivot: it is keyed to 800-171 Rev 2, which has no
   official OSCAL catalog and is not reachable from the FedRAMP ruleset. Adding it there would have
-  meant a second collection programme inside a repository whose entire architecture is "one
+  meant a second collection program inside a repository whose entire architecture is "one
   collection, many frameworks."
 - **This repository starts from a CUI boundary**, where 800-171 Rev 2 *is* the requirements body and
   the catalog has to be authored regardless. The cost `ksi-harness` refused to pay is the entry

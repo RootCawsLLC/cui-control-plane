@@ -6,7 +6,7 @@
 scenario_id: scn.cui-exfil.enclave
 title: "CUI is exfiltrated from the enclave"
 loss_event: "Controlled Unclassified Information held inside the enclave boundary is copied out by an unauthorised party and leaves organisational control."
-threat_community: "External state-aligned actor targeting defence industrial base contractors"
+threat_community: "External state-aligned actor targeting defense industrial base contractors"
 asset: "CUI at rest and in transit within the enclave boundary"
 effect: [confidentiality]
 status: identified
@@ -16,4 +16,4 @@ quantification:
   lm: null
   confidence_tier: null
   blocked_on: "No control measurement exists yet. LEF needs Variance Frequency and control reliability from the pipeline; LM needs loss data this repository does not hold."
-notes: "The dominant scenario in this programme. Note that contractual loss is not a secondary consideration here the way it is in a commercial breach: the safeguarding clause is a term of the contract, so a failure is simultaneously a security event and a breach of contract."
+notes: "The dominant scenario in this program. Note that contractual loss is not a secondary consideration here the way it is in a commercial breach: the safeguarding clause is a term of the contract, so a failure is simultaneously a security event and a breach of contract."

@@ -15,7 +15,7 @@ status: planned
 # where they do not belong and where they would cost real points.
 split_rationale: >-
   Split from ctl.iam.cui-enclave.mfa. Different owner (IT operations, not the enclave identity
-  team), different cost profile (licences already sunk in the corporate tenant), different threat
+  team), different cost profile (licenses already sunk in the corporate tenant), different threat
   model (business email compromise and session theft rather than CUI exfiltration), different
   failure mode (unmanaged or contractor accounts rather than enclave policy exceptions), and no
   assessor scores it.

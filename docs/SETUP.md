@@ -32,7 +32,7 @@ npm run coverage                          # which of the 110 requirements have a
 ```
 
 If that all worked, the machinery is fine and everything from here is about pointing it at your
-organisation.
+organization.
 
 ## Step 1 — Make it yours
 
@@ -90,7 +90,7 @@ Optional but useful: `country_of_incorporation`, `handles_cui`, `parent_supplier
 **This repository does not ship it, and will not.** The list changes on a recurring cadence, and a
 stale copy is worse than none — a supplier screened against last quarter's edition reads as
 "screened" when it is not. The control fails a supplier screened against a superseded edition, which
-is the behaviour you want.
+is the behavior you want.
 
 Export the current DoD-published list to CSV with an `entity_name` column and a
 `list_published_at` date, and drop it at `inbox/entity-list-1260h.csv`. Put its refresh on a
@@ -170,7 +170,7 @@ also compares the two sets of identifiers and says so when they share almost not
 That is worth reading carefully, because it does not look like a configuration problem — it looks
 like a catastrophic estate. The run that prompted this check reported 81 unmanaged assets and 68
 unclassified ones against a real account. Both exports were well formed, both used identical
-identifier formats, and normalising the join key recovered nothing: the cloud query was answering
+identifier formats, and normalizing the join key recovered nothing: the cloud query was answering
 from a decommissioned index while the CMDB described resources that genuinely existed. When you see
 this note, check the export, the account and the region before you open a single ticket.
 
@@ -224,7 +224,7 @@ cost of a complete population. And Okta names factors differently (`webauthn`, `
 `signed_nonce` rather than `fido2SecurityKey`); the default accepted set follows the provider, so
 you only touch `identity.phishing_resistant_methods` if your policy differs.
 
-**Only ACTIVE factors count.** An Okta enrolment can sit in `PENDING_ACTIVATION` indefinitely, and
+**Only ACTIVE factors count.** An Okta enrollment can sit in `PENDING_ACTIVATION` indefinitely, and
 counting it is how an MFA rollout reports full coverage while part of the population still signs in
 with a password.
 
@@ -239,7 +239,7 @@ Center and assume roles, your IAM users are service principals and your humans a
 Store. Path E measures the wrong set there.
 
 **It cannot establish MFA, and it says so rather than guessing.** Identity Center exposes no
-per-user MFA enrolment through any public API — verified against the SDK, not assumed. So the
+per-user MFA enrollment through any public API — verified against the SDK, not assumed. So the
 collector reports the workforce population as established but insufficient for the MFA control,
 which is withheld with that reason attached. It deliberately does not emit `factor_count: 0`,
 because that asserts "no MFA enrolled" when the truth is "unknowable from here", and the resulting
@@ -265,7 +265,7 @@ It is the right choice for the case that is common among smaller subcontractors:
 IAM users as the actual human sign-in path, no federation. The tool cannot tell which case you are
 in, so choosing this provider is you asserting the second one.
 
-Two behaviours worth knowing:
+Two behaviors worth knowing:
 
 - **Principals with no console password are excluded by default.** A key-only automation user has
   no console to phish, so counting it as an unenrolled human overstates the failure. Set
@@ -327,7 +327,7 @@ folder of screenshots.
 
 ---
 
-## What you will need to customise
+## What you will need to customize
 
 Ordered by how soon it will bite you.
 

@@ -38,7 +38,7 @@ anyone who can open a pull request can propose a workflow file. `allowed_refs` r
 outright rather than trusting the operator to notice.
 
 Fork pull requests cannot reach it regardless — GitHub does not mint an id-token for the base
-repository on a fork PR — but relying on that alone means relying on a GitHub behaviour instead of on
+repository on a fork PR — but relying on that alone means relying on a GitHub behavior instead of on
 your own trust policy.
 
 **The `aud` condition is present.** Without it the role accepts a token minted for any audience.

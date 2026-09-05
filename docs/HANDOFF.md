@@ -60,7 +60,7 @@ and none will be committed. It is written to fail loudly with instructions rathe
 recorded API shapes, and the fixtures exercise the traps each provider has - Okta's Link-header
 paging and PENDING_ACTIVATION factors, all three of AWS Config's tag shapes, Entra users absent from
 the registration report. But recorded shapes are not the same as a real response, and the first live
-run of any collector should be treated as a test of the collector, not of the organisation.
+run of any collector should be treated as a test of the collector, not of the organization.
 
 **Except AWS, which has now been run live** against lab account 445817184167 (us-east-1, 2026-08-20).
 82 resources across 29 types, Config enabled, paging and population reconciliation all behaved. Two

@@ -160,10 +160,10 @@ sampling design to describe. The assessment plan for a query is the query.
 The same pipeline that produces the assessment package also emits Variance Frequency and Variance
 Duration on every control, which are direct inputs to loss event frequency for the scenarios that
 actually matter here — a CUI breach, a missed 1260H screening, an undetected covered-telecom
-component. That is the difference between building this as a compliance cost centre and building it
+component. That is the difference between building this as a compliance cost center and building it
 as a risk instrument that happens to also satisfy an assessor.
 
-If quantifying those scenarios becomes useful — sizing exposure from a CUI incident, or prioritising
+If quantifying those scenarios becomes useful — sizing exposure from a CUI incident, or prioritizing
 which of the 110 requirements to harden first by risk-reduction-per-dollar — that work picks up
 directly from the assertion records this plan produces, with no re-architecture. The `cost` and
 `measurement` blocks on each control record are the hooks; they are deliberately empty rather than

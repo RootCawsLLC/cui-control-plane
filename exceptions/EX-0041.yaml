@@ -10,7 +10,7 @@ subjects:
   - u_break_glass_02
   - u_break_glass_03
 reason: >-
-  Break-glass accounts cannot enrol a phishing-resistant factor without creating a dependency on
+  Break-glass accounts cannot enroll a phishing-resistant factor without creating a dependency on
   the same identity infrastructure they exist to recover from. They are excluded from the MFA
   population and carried under compensating monitoring instead.
 approved_by: security-engineering

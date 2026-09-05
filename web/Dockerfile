@@ -5,7 +5,7 @@
 #   docker build -f web/Dockerfile -t <repo>:<tag> .
 
 # ---- build: install the tool's deps, then build the web app ----
-FROM public.ecr.aws/docker/library/node:22-bookworm-slim AS build
+FROM public.ecr.aws/docker/library/node:26-bookworm-slim AS build
 WORKDIR /repo
 # python3/make/g++ so the tool's `duckdb` dependency can build its native addon
 # from source if no prebuilt binary matches this Node ABI. The web demo itself
@@ -37,7 +37,7 @@ COPY web ./web
 RUN cd web && npm run build
 
 # ---- runner: run `next start` with the full tree in place ----
-FROM public.ecr.aws/docker/library/node:22-bookworm-slim AS runner
+FROM public.ecr.aws/docker/library/node:26-bookworm-slim AS runner
 WORKDIR /repo
 ENV NODE_ENV=production
 ENV PORT=3230

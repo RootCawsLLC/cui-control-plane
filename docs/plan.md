@@ -140,7 +140,7 @@ sampling design to describe. The assessment plan for a query is the query.
   "screened against a superseded edition" is a control failure here and not a data-quality note.
 - **§889 annual representation regenerates** from the live telecom-equipment attestation control
   instead of being re-collected as a standalone form each year.
-- **§866 harmonisation** is the argument for having built on crosswalked canonical controls in the
+- **§866 harmonization** is the argument for having built on crosswalked canonical controls in the
   first place: whatever DoD's consolidated framework turns out to be, it lands as a new crosswalk
   column against controls that already exist, not a rebuild. That is worth saying explicitly to
   whoever is funding this.
@@ -153,7 +153,7 @@ sampling design to describe. The assessment plan for a query is the query.
 | 2–8 | Control records, SCF crosswalk, OSCAL O1/O2 | Boundary decision |
 | 6–14 | Pipeline: asset inventory → MFA → remaining IAM/data/network → entity screening → telecom attestation → IR | Control records |
 | 10–16 | OSCAL O3, O4, O5 and SPRS scoring | Pipeline producing assertions |
-| Ongoing | List monitoring, representation regeneration, harmonisation crosswalk maintenance | Everything above operating |
+| Ongoing | List monitoring, representation regeneration, harmonization crosswalk maintenance | Everything above operating |
 
 ## What this buys beyond the assessment
 

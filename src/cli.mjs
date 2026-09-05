@@ -84,7 +84,7 @@ async function main(argv) {
 
     // A scheduled, unattended run must never contribute synthetic snapshots to a real evidence
     // history. This is not hypothetical: ccp.config.yaml is gitignored - correctly, it describes one
-    // organisation and belongs in that organisation's repository - so a CI checkout has no config,
+    // organization and belongs in that organization's repository - so a CI checkout has no config,
     // falls back to the bundled example, and collects fixtures. The job goes green, the numbers look
     // plausible, and fixture data enters the audit trail that Variance Duration is computed from.
     if (argv.includes('--require-real') && fixture) {
@@ -95,7 +95,7 @@ async function main(argv) {
         : '  cause: --fixture was passed explicitly.');
       console.error('');
       console.error('  A scheduled run must collect from real systems or collect nothing. Supply the');
-      console.error('  organisation config before collecting - see docs/SETUP.md.');
+      console.error('  organization config before collecting - see docs/SETUP.md.');
       return 2;
     }
     console.log(fixture ? 'Collecting (FIXTURE MODE - no real system is contacted):' : 'Collecting:');

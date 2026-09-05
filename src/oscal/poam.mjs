@@ -7,7 +7,7 @@ import { loadControls, loadRequirementIndex, isFixtureSet } from '../lib/load.mj
  * Those timestamps are what convert a POA&M from a compliance artifact into a risk artifact. A
  * conventional POA&M says "this is broken and here is a date". This one also says how long it has
  * been broken, how long it took to notice, and how long it sat before anyone acted - which is the
- * decomposition that tells you whether the problem is monitoring, prioritisation, or capacity.
+ * decomposition that tells you whether the problem is monitoring, prioritization, or capacity.
  *
  * TWO REFUSALS ARE ENCODED HERE
  *
@@ -148,7 +148,7 @@ function describeItem({ assertion, failing, control, openDays, segments, basis }
 
 /**
  * started -> detected  : Control Monitoring        (cadence / coverage)
- * detected -> started  : Treatment Sel. & Prior.   (prioritisation / ownership)
+ * detected -> started  : Treatment Sel. & Prior.   (prioritization / ownership)
  * started -> completed : Implementation            (capacity / tooling)
  */
 export function segmentDurations(v) {

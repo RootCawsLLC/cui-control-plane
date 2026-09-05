@@ -18,7 +18,7 @@ select
     i.incident_id                          as subject_id,
     -- A NON-REPORTABLE incident is not required to have a DIBNet submission, and demanding one
     -- would make every correctly-triaged incident a failure. What IS required of it is a recorded
-    -- basis for that judgement, because "we decided it was not reportable" is the decision most
+    -- basis for that judgment, because "we decided it was not reportable" is the decision most
     -- worth being able to review later - so an unexplained non-reportable classification fails.
     coalesce(
         case

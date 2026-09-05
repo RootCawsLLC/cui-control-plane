@@ -21,7 +21,7 @@ import { join } from 'node:path';
 const QUESTIONS = [
   {
     key: 'organization.name',
-    q: 'Organisation name',
+    q: 'Organization name',
     def: 'Example Defense Systems',
     why: 'Appears in the SSP, the assessment plan and the Section 889 representation.',
   },
@@ -183,7 +183,7 @@ export function buildConfig(answers) {
 
 export function toYaml(config) {
   const lines = [
-    '# ccp.config.yaml - the one file this organisation edits.',
+    '# ccp.config.yaml - the one file this organization edits.',
     '#',
     '# NO CREDENTIALS HERE. Secrets come from environment variables; run `npm run doctor` and it',
     '# will tell you exactly which ones it wants and which are missing. This file is safe to commit',

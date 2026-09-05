@@ -40,7 +40,7 @@ export const resource = (kind, title, filename) => ({
 
 /**
  * Crosswalk links use a URN rather than a fragment, for the same reason. A crosswalk target is an
- * external identifier, not a document this package contains - modelling it as `#framework:item`
+ * external identifier, not a document this package contains - modeling it as `#framework:item`
  * invites the validator to resolve a fragment that was never going to exist.
  */
 export const crosswalkHref = (framework, reference) =>

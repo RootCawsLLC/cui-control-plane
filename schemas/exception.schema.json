@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/exception.schema.json",
   "title": "Control exception",
-  "description": "An approved exception is NOT a pass. It changes the intended state for a subset of the population, which is reduced coverage with an expiry - and an exception with no expiry is an undocumented control change. Modelling exceptions as records rather than as prose in coverage_basis is what makes them countable, expirable, and visible in the generated SSP.",
+  "description": "An approved exception is NOT a pass. It changes the intended state for a subset of the population, which is reduced coverage with an expiry - and an exception with no expiry is an undocumented control change. Modeling exceptions as records rather than as prose in coverage_basis is what makes them countable, expirable, and visible in the generated SSP.",
   "type": "object",
   "additionalProperties": false,
   "required": ["exception_id", "control_id", "subjects", "reason", "approved_by", "granted_at", "expires_at", "compensating"],

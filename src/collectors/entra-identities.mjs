@@ -30,7 +30,7 @@ export const FIXTURE = 'entra-identities';
 const SELECT = 'id,userPrincipalName,displayName,accountEnabled,userType,createdDateTime';
 
 /**
- * Pure grading. Takes the two normalised Graph shapes and returns warehouse rows; no network, so
+ * Pure grading. Takes the two normalized Graph shapes and returns warehouse rows; no network, so
  * it is unit-testable without a tenant. Fetching stays in collect().
  */
 export function grade({ users, registration, config, collectedAt }) {
@@ -74,7 +74,7 @@ export function grade({ users, registration, config, collectedAt }) {
  * Maps Entra's method names onto the vocabulary the control model tests.
  *
  * The model asks for `webauthn` or `piv_cac` because those are the two shapes 800-171 and the CUI
- * threat model care about. Anything the organisation has declared phishing-resistant maps to
+ * threat model care about. Anything the organization has declared phishing-resistant maps to
  * webauthn unless it is certificate-based, which is how a PIV/CAC deployment appears.
  */
 export const RESERVED_TOKENS = new Set(['webauthn', 'piv_cac']);

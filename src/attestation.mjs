@@ -37,7 +37,7 @@ export const TIER_BY_METHOD = {
   'vendor-report': 2,
   'process-walkthrough': 2,
   // A sample is not a population. This repository refuses sampling everywhere else; where a sample
-  // is genuinely all that exists, it is admitted at the lowest tier and labelled.
+  // is genuinely all that exists, it is admitted at the lowest tier and labeled.
   'sampled-inspection': 1,
 };
 
@@ -54,7 +54,7 @@ function validator() {
  * Org-unit words that mean nobody actually signed this.
  *
  * DELIBERATELY A BLOCKLIST OF UNIT WORDS, not a heuristic about what a name looks like. The tempting
- * version - require two capitalised tokens, or reject anything without a space - rejects mononyms,
+ * version - require two capitalized tokens, or reject anything without a space - rejects mononyms,
  * names in non-Latin scripts, hyphenated and particled surnames, and plenty of ordinary names. That
  * would be both wrong and insulting, and it would fail in the unsafe direction by rejecting real
  * attesters. Matching a small set of words that are never part of a personal name is narrower and

@@ -10,7 +10,7 @@ import { loadControls, loadRequirementIndex } from './lib/load.mjs';
  *    up claiming ground nobody actually holds.
  * 2. A control whose status is `planned` does not cover anything yet. Coverage is reported twice -
  *    by intent and by what is operating - because the gap between those two is the readiness plan.
- * 3. Uncovered requirements are enumerated, never summarised. "87 of 110" with no list is a
+ * 3. Uncovered requirements are enumerated, never summarized. "87 of 110" with no list is a
  *    number nobody can act on.
  */
 export function coverage() {
@@ -73,7 +73,7 @@ export function formatCoverage(c) {
     lines.push('');
   }
 
-  // Enumerated, never summarised. This list IS the Phase 1 backlog.
+  // Enumerated, never summarized. This list IS the Phase 1 backlog.
   const gaps = c.rows.filter((r) => r.state === 'uncovered').map((r) => r.id);
   lines.push(`Uncovered (${gaps.length}) - every one is either a genuine gap or a scoping decision`);
   lines.push('nobody wrote down, and both need a profile-level tailoring statement:');

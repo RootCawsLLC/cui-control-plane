@@ -39,7 +39,7 @@ export const SATURATION_THRESHOLD = 0.7;
  *
  * Multiplying six episodes in a fortnight by 26 produces a confident-looking three-figure
  * frequency built on six data points. The arithmetic is right and the number is not usefully
- * precise, so the raw count and the window travel with it and the annualised figure is labelled
+ * precise, so the raw count and the window travel with it and the annualised figure is labeled
  * as an extrapolation. A quarter is the point at which seasonal and release-cycle effects start
  * being represented at all.
  */
@@ -215,7 +215,7 @@ export function formatVariance({ rows }) {
 
     const seg = [
       ['monitoring', r.segment_monitoring_days],
-      ['prioritisation', r.segment_prioritisation_days],
+      ['prioritization', r.segment_prioritisation_days],
       ['implementation', r.segment_implementation_days],
     ].filter(([, v]) => v !== null);
     if (seg.length > 0) {

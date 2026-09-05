@@ -5,8 +5,8 @@ import { repoPath } from '../config.mjs';
  * Enclave identities from AWS IAM.
  *
  * WHEN THIS IS THE RIGHT COLLECTOR, AND WHEN IT IS A LIE. Entra and Okta are identity providers;
- * AWS IAM is an authorisation system for one cloud account that happens to hold user records. For an
- * organisation whose people sign in through an IdP and assume roles, IAM users are service
+ * AWS IAM is an authorization system for one cloud account that happens to hold user records. For an
+ * organization whose people sign in through an IdP and assume roles, IAM users are service
  * principals and break-glass accounts - a population of two or three, not the enclave workforce, and
  * pointing this control at them would produce a flattering number about the wrong set.
  *
@@ -15,7 +15,7 @@ import { repoPath } from '../config.mjs';
  * identities in the boundary.
  *
  * The tool cannot tell which case it is in, so it does not guess. `identity.provider: aws-iam` is
- * the organisation asserting the first case, and the assertion records that claim in
+ * the organization asserting the first case, and the assertion records that claim in
  * `population_definition` so an assessor sees what was counted rather than inferring it.
  *
  * WHAT COUNTS AS A FACTOR. Only a registered MFA device. An access key is not a factor - it is a

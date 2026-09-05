@@ -9,7 +9,7 @@ import { ROOT, loadSchema } from './lib/load.mjs';
 export const CONFIG_FILE = 'ccp.config.yaml';
 
 /**
- * Loads and validates ccp.config.yaml - the one file an organisation edits.
+ * Loads and validates ccp.config.yaml - the one file an organization edits.
  *
  * CREDENTIALS ARE NEVER READ FROM THIS FILE. Every secret comes from an environment variable,
  * named here so the config is self-describing and committable. The moment a client secret can
@@ -28,7 +28,7 @@ export const REQUIRED_ENV = {
 };
 
 /**
- * Methods that count as phishing-resistant unless the organisation says otherwise.
+ * Methods that count as phishing-resistant unless the organization says otherwise.
  *
  * Deliberately excludes SMS, voice and authenticator push - those are multi-factor but not
  * phishing-resistant, and 800-171 3.5.3 is assessed on multi-factor while the CUI threat model
@@ -72,14 +72,14 @@ export class ConfigError extends Error {}
 export const EXAMPLE_CONFIG = 'examples/ccp.config.example.yaml';
 
 /**
- * Loads the organisation's config, falling back to the bundled example.
+ * Loads the organization's config, falling back to the bundled example.
  *
  * The fallback is what makes a fresh clone runnable: `npm install && npm run pipeline` works before
  * anybody has answered a single question. The example is wired entirely to bundled fixtures, so it
  * cannot accidentally read from, or assert against, a real system.
  *
- * ccp.config.yaml is gitignored on purpose. It describes one organisation's boundary and systems,
- * and it should live in that organisation's own repository rather than being carried back upstream.
+ * ccp.config.yaml is gitignored on purpose. It describes one organization's boundary and systems,
+ * and it should live in that organization's own repository rather than being carried back upstream.
  */
 export function loadConfig(file = CONFIG_FILE) {
   let path = configPath(file);

@@ -55,7 +55,7 @@ export function parseCsv(text) {
 /**
  * Parses to objects keyed by header.
  *
- * Headers are normalised to snake_case so `Supplier ID`, `supplier_id` and `SUPPLIER-ID` all land
+ * Headers are normalized to snake_case so `Supplier ID`, `supplier_id` and `SUPPLIER-ID` all land
  * on the same column. That is deliberate leniency in exactly one place: the analyst is exporting
  * from a procurement system they do not control, and failing on a capital letter would be a
  * pointless obstacle. Everything downstream stays strict.
@@ -87,7 +87,7 @@ export const normaliseHeader = (h) =>
 export const csvBool = (v) => ['true', 'yes', 'y', '1'].includes(String(v ?? '').trim().toLowerCase());
 
 /**
- * Normalised entity name for list matching.
+ * Normalized entity name for list matching.
  *
  * Screening joins on this, so it is the most consequential function in the supply-chain controls:
  * too aggressive and you create false hits, too lax and a listed entity slips through on a

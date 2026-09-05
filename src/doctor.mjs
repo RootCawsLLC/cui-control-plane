@@ -49,7 +49,7 @@ export function doctor({ env = process.env } = {}) {
     }
   } catch (err) {
     add(FAIL, CONFIG_FILE, err.message.split('\n')[0], 'npm run init');
-    return summarise(checks, { config: null });
+    return summarize(checks, { config: null });
   }
 
   // --- the boundary decision -----------------------------------------------------------------
@@ -160,7 +160,7 @@ export function doctor({ env = process.env } = {}) {
     }
   }
 
-  return summarise(checks, { config, configState });
+  return summarize(checks, { config, configState });
 }
 
 function providerFor(name, config) {
@@ -211,7 +211,7 @@ function keyFor(name) {
   }[name];
 }
 
-function summarise(checks, { config }) {
+function summarize(checks, { config }) {
   return {
     checks,
     config,

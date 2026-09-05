@@ -41,7 +41,7 @@ export const CONCURRENCY = 8;
  * Maps an Okta factorType onto the vocabulary the control model tests.
  *
  * The model asks for `webauthn` or `piv_cac`. Okta expresses smart-card authentication as an
- * external IdP rather than a factor, so `piv_cac` only appears where an organisation has said so
+ * external IdP rather than a factor, so `piv_cac` only appears where an organization has said so
  * explicitly - it is never inferred, because inferring it would manufacture a stronger claim than
  * the data supports.
  */
@@ -52,7 +52,7 @@ export function normaliseFactor(factorType, phishingResistant) {
     return factorType === 'x509' || factorType === 'smartcard' ? 'piv_cac' : 'webauthn';
   }
   // Okta's raw factorType for a security key IS the string 'webauthn', which is also the token the
-  // control model treats as passing. So a factor the organisation has deliberately NOT accepted as
+  // control model treats as passing. So a factor the organization has deliberately NOT accepted as
   // phishing-resistant would sail through on its name alone. Anything unaccepted is suffixed so it
   // cannot collide with the model's vocabulary.
   return RESERVED_TOKENS.has(factorType) ? `${factorType}:not-accepted` : factorType;
@@ -71,7 +71,7 @@ export function grade({ users, factorsByUser, config, collectedAt }) {
 
   return users.map((u) => {
     // Only ACTIVE factors count. An Okta factor can sit in PENDING_ACTIVATION indefinitely, and
-    // treating an un-activated enrolment as coverage is how an MFA rollout reports 100% while a
+    // treating an un-activated enrollment as coverage is how an MFA rollout reports 100% while a
     // slice of the population still signs in with a password.
     const factors = (factorsByUser[u.id] ?? []).filter((f) => f.status === 'ACTIVE');
     const types = factors.map((f) => f.factorType);

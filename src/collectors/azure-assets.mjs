@@ -23,9 +23,9 @@ export const CONTROLS = ['ctl.cui.boundary.asset-inventory'];
 export const FIXTURE = 'azure-assets';
 
 /**
- * The tags this reads are the organisation's, not Azure's. `owner` and `data_classification` are
+ * The tags this reads are the organization's, not Azure's. `owner` and `data_classification` are
  * the two the asset-inventory control tests for, and an untagged resource FAILS that control
- * rather than being skipped - which is the intended behaviour and usually the first real finding a
+ * rather than being skipped - which is the intended behavior and usually the first real finding a
  * new deployment produces.
  */
 export const QUERY = [

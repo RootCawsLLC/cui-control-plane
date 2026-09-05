@@ -3,7 +3,7 @@
  *
  * Runs in its own plain Node ESM process — the same way `src/cli.mjs` runs the
  * tool — so cui-control-plane is never touched by the Next bundler and its
- * filesystem behaviour is exactly as shipped. The API route spawns this, writes a
+ * filesystem behavior is exactly as shipped. The API route spawns this, writes a
  * request as JSON on stdin, and reads a result as JSON on stdout.
  *
  * It imports the REAL tool modules natively (never a reimplementation) and calls
@@ -91,7 +91,7 @@ const REGIMES = [
   },
   {
     key: 'sec866',
-    name: 'Cyber requirement harmonisation',
+    name: 'Cyber requirement harmonization',
     driver: 'FY2026 NDAA §866',
     rule: 'forthcoming',
     demands: 'Anticipate, do not front-run — be crosswalk-ready',
@@ -266,7 +266,7 @@ function summariseCoverage(c) {
     weak: c.weak,
     uncovered: c.uncovered,
     // The mapped requirements are the actionable list; the 104 uncovered ids are
-    // summarised by count here (the CLI enumerates them — that is the Phase 1 backlog).
+    // summarized by count here (the CLI enumerates them — that is the Phase 1 backlog).
     mapped: c.rows.filter((r) => r.state !== 'uncovered'),
   };
 }

@@ -5,7 +5,7 @@
  * plain Node ESM process (scripts/run-ccp.mjs) that imports the tool's modules
  * natively and runs the exact shipped code path (coverage / sprs / variance /
  * emit all), then relays that process's JSON result. Running out-of-process keeps
- * the tool's ESM resolution and filesystem behaviour identical to the CLI and
+ * the tool's ESM resolution and filesystem behavior identical to the CLI and
  * avoids the ESM/CJS interop that breaks when a pure-ESM tool is pulled into the
  * Next bundle under `next start`.
  */

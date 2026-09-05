@@ -1,9 +1,9 @@
 # cui-control-plane
 
 One control inventory for a DoD CUI boundary. Five NDAA-driven regimes attach to it as crosswalk
-edges rather than as five compliance programmes. The pipeline that produces the assessment package
+edges rather than as five compliance programs. The pipeline that produces the assessment package
 also produces Variance Frequency and Variance Duration on every control, which is what makes it a
-risk instrument rather than a compliance cost centre.
+risk instrument rather than a compliance cost center.
 
 **Live guide** — what it does, when to use it, how to run the fixture pipeline, and how to
 point it at a real estate: https://rootcawsllc.github.io/cui-control-plane/
@@ -32,7 +32,7 @@ npm run doctor    # what is configured, what is missing, which controls will be 
 ```
 
 **[docs/SETUP.md](docs/SETUP.md) is the guided walkthrough** — the three decisions only you can
-make, how to wire your first real source, and exactly what needs customising.
+make, how to wire your first real source, and exactly what needs customizing.
 
 Everything under `fixtures/` is synthetic and stamped `NOT REAL EVIDENCE`; every artifact generated
 from it carries the stamp through, and the SPRS scorer refuses to call the result submittable.
@@ -53,9 +53,9 @@ conflated with them:
 | Cyber requirement harmonisation | FY2026 NDAA §866 | forthcoming | Anticipate, do not front-run — be crosswalk-ready |
 | *(adjacent)* Supply chain security | FASCSA 2018 — **not an NDAA section** | FAR subpart 4.23 | FASC exclusion and removal orders |
 
-Building five parallel programmes against those would produce five populations of the same assets,
+Building five parallel programs against those would produce five populations of the same assets,
 five evidence collections, and no way to answer "how exposed are we" across any of it. So the whole
-repository is organised around **one** control inventory that each regime crosswalks into —
+repository is organized around **one** control inventory that each regime crosswalks into —
 [ADR 0001](docs/adr/0001-one-control-inventory.md).
 
 ## What is here
@@ -140,7 +140,7 @@ The interesting part of this repository is the set of things it will not emit.
   is unresolved. False Claims Act exposure attaches to the representation itself, so "we could not
   determine the manufacturer of three components" is a basis for representing *nothing yet*, never
   for representing that no covered equipment is used.
-- **`ccp variance` will not annualise a fortnight into a rate** without labelling it extrapolation,
+- **`ccp variance` will not annualise a fortnight into a rate** without labeling it extrapolation,
   will not average away censored episodes, and reports the queue regime instead of a mean once
   remediation saturates.
 
@@ -158,7 +158,7 @@ Three things it gets right that are easy to get wrong: **censored episodes** are
 excluded from the mean with the exclusion stated, because the long-running failures are exactly the
 ones still open and dropping them biases VD downward; **queue saturation** is reported as a regime
 rather than a mean, because past roughly 0.7 utilisation duration goes non-linear; and **short
-windows** are labelled extrapolation, because five episodes in a fortnight annualising to 130/year
+windows** are labeled extrapolation, because five episodes in a fortnight annualising to 130/year
 is arithmetic, not measurement. A single snapshot gets no frequency at all — it is a photograph, not
 a history.
 
@@ -206,6 +206,6 @@ is not. SCF content is resolved at run time from a local release and never vendo
   when `ksi-harness` ADR 0004 declared it out of scope there
 - [AGENTS.md](AGENTS.md) — working rules for anyone changing this code
 
-## Licence
+## License
 
 Apache-2.0. No third-party framework content is vendored or redistributed.

@@ -47,7 +47,7 @@ Consequences:
 ## Consequences
 
 - `ccp coverage` will report a large uncovered count for a long time, and it enumerates every
-  uncovered identifier rather than summarising. That list *is* the Phase 1 backlog. A repository
+  uncovered identifier rather than summarizing. That list *is* the Phase 1 backlog. A repository
   that reported a comfortable number here would be lying about a greenfield build.
 - Requirements mapping to zero controls are either a genuine gap or a scoping decision nobody wrote
   down. Both need a profile-level tailoring statement, which is what the O2 Profile carries.

@@ -19,7 +19,7 @@ is routinely conflated with them:
 | Cyber requirement harmonisation | FY2026 NDAA §866 | forthcoming consolidated framework |
 | *(adjacent, not an NDAA section)* Federal Acquisition Supply Chain Security Act | FASCSA 2018 | FAR subpart 4.23, FASC exclusion orders |
 
-The obvious response — one programme per regime — is wrong in a way that is expensive and slow to
+The obvious response — one program per regime — is wrong in a way that is expensive and slow to
 undo. It produces five populations of the same assets, five evidence collections, five sets of
 drift, and no way to answer "how exposed are we" across any of it.
 
@@ -45,7 +45,7 @@ Concretely:
 
 ## Consequences
 
-- Adding a regime is a crosswalk column, not a programme. This is the concrete payoff when §866
+- Adding a regime is a crosswalk column, not a program. This is the concrete payoff when §866
   harmonisation lands: whatever DoD's consolidated framework turns out to be, it attaches to
   controls that already exist.
 - The supplier master is built **once**, in Phase 0, and serves both the §1260H control and the

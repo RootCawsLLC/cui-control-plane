@@ -8,7 +8,8 @@
     "dev": "next dev -p 3230",
     "build": "next build",
     "start": "next start -p 3230",
-    "lint": "next lint"
+    "lint": "next lint",
+    "security-gate": "node scripts/security-gate.mjs"
   },
   "dependencies": {
     "next": "15.5.25",
@@ -22,5 +23,8 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "typescript": "5.5.3"
+  },
+  "overrides": {
+    "postcss": "^8.5.28"
   }
 }

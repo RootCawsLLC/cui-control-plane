@@ -23,7 +23,7 @@ basis: >-
   untrusted networks.
 
 why_no_query: >-
-  Identity Center publishes no per-user MFA enrolment through any public API, confirmed against the
+  Identity Center publishes no per-user MFA enrollment through any public API, confirmed against the
   identitystore and sso-admin SDKs. Federating to an external IdP would make it queryable via the
   Entra or Okta collector, but that is a boundary change rather than a collector.
 

@@ -256,7 +256,7 @@ Two real ways to close it, both named in the output:
 Set `identity.provider: aws-iam`. Uses the standard AWS credential chain — no extra secrets.
 
 **Read this before choosing it.** Entra and Okta are identity providers; AWS IAM is an
-authorisation system for one account that happens to hold user records. If your people sign in
+authorization system for one account that happens to hold user records. If your people sign in
 through an IdP and assume roles, your IAM users are service principals and break-glass accounts —
 a population of two or three, not your workforce — and pointing the MFA control at them produces a
 flattering number about the wrong set.

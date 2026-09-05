@@ -39,7 +39,7 @@ from it carries the stamp through, and the SPRS scorer refuses to call the resul
 
 ## The framing
 
-The National Defense Authorization Act is enabling legislation. It authorises and directs
+The National Defense Authorization Act is enabling legislation. It authorizes and directs
 rulemaking; it does not specify controls, evidence, or assessment mechanics. "NDAA compliance"
 resolves to five independently-implemented regimes, plus one adjacent statute that is routinely
 conflated with them:
@@ -50,7 +50,7 @@ conflated with them:
 | Safeguarding CDI + incident reporting | pre-dates the NDAA | DFARS 252.204-7012 | 72-hour DIBNet report **from discovery**, 90-day image preservation, DC3 malware submission, flow-down |
 | Covered telecom / video surveillance | FY2019 NDAA §889 | FAR 52.204-24 / -25 | Annual representation of no covered use |
 | Chinese Military Companies list | FY2021 NDAA §1260H | DoD-published list + implementing clause | No contracting with a listed entity; supply-chain diligence to catch affiliates |
-| Cyber requirement harmonisation | FY2026 NDAA §866 | forthcoming | Anticipate, do not front-run — be crosswalk-ready |
+| Cyber requirement harmonization | FY2026 NDAA §866 | forthcoming | Anticipate, do not front-run — be crosswalk-ready |
 | *(adjacent)* Supply chain security | FASCSA 2018 — **not an NDAA section** | FAR subpart 4.23 | FASC exclusion and removal orders |
 
 Building five parallel programs against those would produce five populations of the same assets,

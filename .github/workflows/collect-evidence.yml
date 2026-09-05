@@ -69,7 +69,7 @@ jobs:
       # public repository - so a CI checkout has no config and falls back to the bundled example,
       # which reads only synthetic data. Observed on the first run of this workflow: it went green
       # having collected 12 fixture identities instead of the real workforce.
-      - name: Fetch the organisation config
+      - name: Fetch the organization config
         run: |
           aws s3 cp "s3://${{ vars.CCP_EVIDENCE_BUCKET }}/config/ccp.config.yaml" ccp.config.yaml
           echo "config fetched: $(wc -l < ccp.config.yaml) lines"
@@ -79,7 +79,7 @@ jobs:
       # them, and a source it cannot see WITHHOLDS every control over it. Observed: a run collected
       # 140 real Config resources and still asserted nothing, because the CMDB export existed only on
       # a laptop and the asset inventory reconciles across both.
-      - name: Fetch the organisation inputs
+      - name: Fetch the organization inputs
         run: |
           mkdir -p inbox
           aws s3 sync "s3://${{ vars.CCP_EVIDENCE_BUCKET }}/inbox" inbox --only-show-errors

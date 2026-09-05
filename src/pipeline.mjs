@@ -321,7 +321,7 @@ function varianceFor(row, history, subjectId, asOf) {
  * Below this, two sources that are supposed to describe one estate are treated as describing two.
  *
  * Expressed against the SMALLER source, not the union: a CMDB tracking 68 things inside an account
- * that reports 82 should recognise most of its own 68. Using the union would let a large, mostly
+ * that reports 82 should recognize most of its own 68. Using the union would let a large, mostly
  * irrelevant cloud population mask a CMDB that matches nothing.
  *
  * Five per cent is a convention rather than a measurement, and deliberately near-zero. Real
@@ -349,7 +349,7 @@ export const MIN_RECONCILIATION_MEMBERS = 10;
  * estate in serious disarray. In fact the CMDB export and the cloud query shared exactly ONE
  * identifier out of 68, because AWS Config had no recorder and was answering from a decommissioned
  * index while the CMDB described resources that genuinely existed. Both sides were well formed,
- * both used identical identifier formats, and normalising the join key recovered nothing. The
+ * both used identical identifier formats, and normalizing the join key recovered nothing. The
  * numbers were not findings about the estate; they were the two inputs not being about each other.
  *
  * A note rather than a withholding: the population is established, and the members really are in
@@ -446,7 +446,7 @@ export function refuseToCrossStamps(file, assertion) {
 /**
  * Prior snapshots for this run, of THIS RUN'S KIND only.
  *
- * The stamp filter is defence in depth - the directories are already separate - but a legacy
+ * The stamp filter is defense in depth - the directories are already separate - but a legacy
  * directory from before that split still holds both kinds, and a real assertion must never date
  * a finding from a synthetic one. Without this, a genuine finding inherited first_observed from
  * a made-up snapshot and was emitted unstamped at confidence tier 4, with the fabricated

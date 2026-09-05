@@ -1,7 +1,7 @@
 -- Incident records, including those triaged as NOT reportable.
 --
 -- Non-reportable incidents stay in the population with their classification and its basis. That
--- is the judgement most worth being able to review later; filtering them out here would make a
+-- is the judgment most worth being able to review later; filtering them out here would make a
 -- misclassification invisible to the control that exists to catch it.
 select
     i.incident_id,

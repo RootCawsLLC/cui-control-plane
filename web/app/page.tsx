@@ -93,7 +93,7 @@ export default function Page() {
       <h1>cui-control-plane</h1>
       <p className="thesis">
         <b>One</b> control inventory for a DoD CUI boundary. The five NDAA-driven regimes attach to it
-        as <b>crosswalk edges</b> — not as five parallel compliance programmes. The same pipeline that
+        as <b>crosswalk edges</b> — not as five parallel compliance programs. The same pipeline that
         produces the assessment package also derives the <b>SPRS score</b> from assertion records and
         emits the <b>OSCAL O1–O5</b> package with deterministic UUIDs.
       </p>
@@ -411,7 +411,7 @@ function VarianceView({ rows }: { rows: VarianceRow[] }) {
         </div>
         <p className="notes" style={{ marginTop: '0.6rem' }}>
           These are the inputs to control reliability, and thence to loss event frequency. A single
-          snapshot gets no rate; a short window is labelled extrapolation; censored (still-open)
+          snapshot gets no rate; a short window is labeled extrapolation; censored (still-open)
           episodes are excluded from the mean with the exclusion stated.
         </p>
       </div>

@@ -10,7 +10,7 @@
 --
 -- SEGMENT DECOMPOSITION - which FAIR-CAM function is slow:
 --   started    -> detected   : Control Monitoring          (a cadence / coverage problem)
---   detected   -> rem_started: Treatment Sel. & Prior.     (a prioritisation / ownership problem)
+--   detected   -> rem_started: Treatment Sel. & Prior.     (a prioritization / ownership problem)
 --   rem_started-> completed  : Implementation              (a capacity / tooling problem)
 with history as (
     select as_of, control_id, subject_id, passing

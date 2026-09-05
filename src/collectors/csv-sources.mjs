@@ -121,7 +121,7 @@ export const suppliers = makeCsvCollector({
     snapshot_at: at,
     supplier_id: o.supplier_id,
     legal_name: o.legal_name,
-    // Computed here rather than asked for. Expecting an analyst to hand-normalise entity names in a
+    // Computed here rather than asked for. Expecting an analyst to hand-normalize entity names in a
     // spreadsheet is how screening silently misses a match on a suffix.
     normalised_name: o.normalised_name || normaliseEntityName(o.legal_name),
     country_of_incorporation: o.country_of_incorporation || null,
@@ -212,7 +212,7 @@ export const identities = makeCsvCollector({
 });
 
 /**
- * The CMDB half of the asset reconciliation - what the organisation BELIEVES is in the boundary.
+ * The CMDB half of the asset reconciliation - what the organization BELIEVES is in the boundary.
  *
  * This is its own configured source, not a variant of the cloud one, and the distinction is the
  * whole control. Reconciliation needs two independently-sourced opinions about the same estate:
@@ -288,7 +288,7 @@ export const mdmDevices = makeCsvCollector({
     snapshot_at: at,
     device_id: o.device_id,
     assigned_user: o.assigned_user || null,
-    // Absent column means the analyst exported the enclave's enrolment list, which is what was
+    // Absent column means the analyst exported the enclave's enrollment list, which is what was
     // asked for. A blank VALUE in a present column is still unknown and stays excluded.
     enclave_enrolled: o.enclave_enrolled ? csvBool(o.enclave_enrolled) : true,
     agent_last_seen: iso(o.agent_last_seen),

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/config.schema.json",
   "title": "ccp.config.yaml",
-  "description": "The one file an organisation edits. Everything else in this repository is meant to work unchanged. Created by `ccp init`, checked by `ccp doctor`, and read by every collector. NO CREDENTIALS LIVE HERE - secrets come from environment variables, named in this file but never valued in it, so the config can be committed to your own repository without a secret-scanning incident.",
+  "description": "The one file an organization edits. Everything else in this repository is meant to work unchanged. Created by `ccp init`, checked by `ccp doctor`, and read by every collector. NO CREDENTIALS LIVE HERE - secrets come from environment variables, named in this file but never valued in it, so the config can be committed to your own repository without a secret-scanning incident.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -101,7 +101,7 @@
           "type": "string"
         },
         "phishing_resistant_methods": {
-          "description": "Which registered methods count as phishing-resistant for this organisation. Configurable because the answer is a policy decision, not a fact.",
+          "description": "Which registered methods count as phishing-resistant for this organization. Configurable because the answer is a policy decision, not a fact.",
           "type": "array",
           "items": {
             "type": "string"
@@ -197,7 +197,7 @@
       "required": [
         "source"
       ],
-      "description": "The asset system of record - what the organisation believes is in the boundary. Separate from cloud on purpose: the asset control reconciles this against what the cloud actually reports, and one setting driving both makes the two halves mutually exclusive.",
+      "description": "The asset system of record - what the organization believes is in the boundary. Separate from cloud on purpose: the asset control reconciles this against what the cloud actually reports, and one setting driving both makes the two halves mutually exclusive.",
       "properties": {
         "source": {
           "type": "string",

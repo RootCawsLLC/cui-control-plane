@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/RootCawsLLC/cui-control-plane/schemas/variance.schema.json",
   "title": "Variance timestamps",
-  "description": "The four timestamps that decompose Variance Duration into FAIR-CAM segments, so you can see which function is slow: started to detected is Control Monitoring, detected to remediation_started is Treatment Selection and Prioritisation, remediation_started to completed is Implementation. This is the piece almost nobody emits and it is the whole point.",
+  "description": "The four timestamps that decompose Variance Duration into FAIR-CAM segments, so you can see which function is slow: started to detected is Control Monitoring, detected to remediation_started is Treatment Selection and Prioritization, remediation_started to completed is Implementation. This is the piece almost nobody emits and it is the whole point.",
   "type": "object",
   "additionalProperties": false,
   "required": ["variance_detected_at", "started_at_basis"],

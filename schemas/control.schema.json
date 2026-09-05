@@ -111,7 +111,7 @@
       "type": ["string", "null"]
     },
     "cost": {
-      "description": "What makes risk-reduction-per-dollar computable. Populate it or the prioritisation has nothing to divide by.",
+      "description": "What makes risk-reduction-per-dollar computable. Populate it or the prioritization has nothing to divide by.",
       "type": "object",
       "additionalProperties": false,
       "properties": {

@@ -55,7 +55,7 @@ jobs:
       # The role trusts only refs/heads/main, so this step is what fails first if somebody tries to
       # run this workflow from a branch.
       - name: Assume the collector role
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_COLLECTOR_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
